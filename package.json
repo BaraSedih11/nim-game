@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "name": "nim-game",
+  "version": "1.0.0",
+  "description": "AI first project",
+  "main": "app.js",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "scripts": {
+    "test": "node app.js",
+    "start": "nodemon app.js"
+  },
+  "author": "Bara Al Sedih",
+  "license": "ISC"
+}
