@@ -5,9 +5,9 @@ const port = 4000;
 app.use(express.static('public'));
 
 app.get('/', (req, res) => {
-  res.sendFile('/public/index.html');
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}...`);
+  console.log(`Server is running on port bbb ${port}...`);
 });
