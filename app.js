@@ -4,9 +4,10 @@ const port = 3000;
 
 app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
+const startGameRouter = require('./routes/startGameRouter');
+
+app.use('/game', startGameRouter);
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}...`);
