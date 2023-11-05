@@ -1,33 +1,43 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const loginForm = document.getElementById("login-form");
-    const gameSelection = document.querySelector(".game");
-    const levelSelection = document.querySelector(".level");
-    const nimGameContainer = document.querySelector(".nim-game-container");
+    const sticksContainer = document.querySelector(".sticks");
+    const newGameButton = document.getElementById("new-game");
+    const resetGameButton = document.getElementById("reset-game");
+    const makeMoveButton = document.getElementById("make-move");
+    const quitButton = document.getElementById("quit");
 
-    loginForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        // Handle the login and show the game selection screen
-        // You can collect the player's name here
-        loginForm.parentElement.classList.add("hidden");
-        gameSelection.classList.remove("hidden");
+    let sticksCount = 7; // Initial number of sticks
+
+    // Function to generate sticks on the UI
+    const generateSticks = () => {
+        sticksContainer.innerHTML = "";
+        for (let i = 0; i < sticksCount; i++) {
+            const stick = document.createElement("div");
+            stick.className = "stick";
+            sticksContainer.appendChild(stick);
+        }
+    };
+
+    // Initialize the game
+    generateSticks();
+
+    // Event listeners for buttons
+    newGameButton.addEventListener("click", () => {
+        sticksCount = 7; // Set the initial number of sticks
+        generateSticks();
     });
 
-    document.getElementById("nim-game").addEventListener("click", () => {
-        gameSelection.classList.add("hidden");
-        levelSelection.classList.remove("hidden");
+    resetGameButton.addEventListener("click", () => {
+        generateSticks();
     });
 
-    document.getElementById("other-game").addEventListener("click", () => {
-        // Handle selecting the other game
+    makeMoveButton.addEventListener("click", () => {
+        if (sticksCount > 0) {
+            sticksCount--; // Remove one stick
+            generateSticks();
+        }
     });
 
-    document.getElementById("start-game").addEventListener("click", () => {
-        // Handle starting the game, get the selected level, and initialize the game
-        // Show the NIM game interface
-        levelSelection.classList.add("hidden");
-        nimGameContainer.classList.remove("hidden");
+    quitButton.addEventListener("click", () => {
+        // Handle quitting the game or going back to the main menu
     });
-
-    // Add event listeners for game actions (reset, new game, submit move, change level)
-    // Implement the game logic here
 });

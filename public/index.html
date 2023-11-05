@@ -5,48 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NIM Game</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="javascirpt" href="script.js">
 </head>
 <body>
     <div class="container">
         <h1>NIM Game</h1>
-        <div class="login">
-            <h2>Login</h2>
-            <form id="login-form">
-                <label for="player-name">Player Name:</label>
-                <input type="text" id="player-name" required>
-                <button type="submit">Start</button>
-            </form>
+        <h1>Hello</h1>
+        <div class="sticks">
+            <!-- Sticks will be dynamically generated here -->
         </div>
-        <div class="game hidden">
-            <h2>Choose a Game</h2>
-            <button id="nim-game">Play NIM</button>
-            <button id="other-game">Play Another Game</button>
-        </div>
-        <div class="level hidden">
-            <h2>Select a Level</h2>
-            <select id="level">
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-            <button id="start-game">Start Game</button>
-        </div>
-        <div class="nim-game-container hidden">
-            <h2>NIM Game - Level: <span id="selected-level"></span></h2>
-            <div class="sticks">
-                <!-- Sticks will be dynamically generated here -->
-            </div>
-            <div class="controls">
-                <button id="reset">Reset</button>
-                <button id="new-game">New Game</button>
-                <button id="submit-move">Submit Move</button>
-                <button id="change-level">Change Level</button>
-            </div>
+        <div class="controls">
+            <button id="new-game">New Game</button>
+            <button id="reset-game">Reset Game</button>
+            <button id="make-move">Make Move</button>
+            <button id="quit">Quit</button>
         </div>
     </div>
     <script src="script.js"></script>
 </body>
 </html>
-
-
