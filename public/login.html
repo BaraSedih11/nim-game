@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>NIM Game</title>
-    <!-- <link rel="stylesheet" type="text/css" href="./style.css"> -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,18 +58,35 @@
         function startGame() {
             console.log("Clicked succesfully");
             const gameType = document.getElementById("gameType").value;
+            const username = document.getElementById("username").value;
 
-            console.log(gameType);
-            // Redirect to the appropriate page based on 'gameType'
-            if (gameType === 'NIM1') {
-                window.location.href = '../version1Page/index.html';
-            } else if (gameType === 'version2') {
-                window.location.href = '/version2Page';
-            } else {
-                // Handle other cases or show an error message
+            let apiURL = '';
+
+            if(gameType == 'NIM1'){
+                apiURL = '/game/version1';
+            } else if(gameType == 'NIM2'){
+                apiURL = '/game/version2';
             }
-        }
 
+            // Make a GET request to the server's API
+            fetch('/game/startGame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, gameType }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = apiURL; 
+                } else {
+                    console.error('Authentication failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     </script>
 </head>
 <body>
@@ -82,7 +98,7 @@
             <label for="gameType">Select a game:</label>
             <select id="gameType">
                 <option value="NIM1">NIM1</option>
-                <option value="AnotherGame">Another Game</option>
+                <option value="NIM2">NIM2</option>
             </select>
             <br>
             <label for="level">select the level:</label>
