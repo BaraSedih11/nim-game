@@ -1,19 +1,17 @@
 const path = require('path');
 
 exports.loginPage = (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '/public', '/login.html')); 
+    res.render(path.join(__dirname, '..', '/public', '/login.ejs'))
 }
 
 exports.version1Page = (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-        } else {
-            console.log('Session destroyed');
-        }
+    res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+    {
+        username: req.session.username,
+        gameType: req.session.gameType,
+        sticks: req.session.sticks,
+        level: req.session.level,
     });
-    res.sendFile(path.join(__dirname, '..', '/public', '/version1Page', '/version1.html'));
 }
 exports.version2Page = (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -28,18 +26,38 @@ exports.version2Page = (req, res) => {
 }
 
 exports.startGame = (req, res) => {
-    const { username, gameType } = req.body;
+    const { username, gameType, sticks, level } = req.body;
     req.session.username = username;
+    req.session.gameType = gameType;
+    req.session.sticks = sticks;
+    req.session.level = level;
 
     if(req.session && req.session.username){
         let apiURL = '';
         if(gameType === 'NIM1'){
-            res.sendFile(path.join(__dirname, '..', '/public', '/version1Page', '/version1.html'));
+            res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+            {
+                username: req.session.username,
+                gameType: req.session.gameType,
+                sticks: req.session.sticks,
+                level: req.session.level,
+            });
         } else if (gameType === 'NIM2'){
-            res.sendFile(path.join(__dirname, '..', '/public', '/version2Page', '/version2.html'));
+            res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'));
         }
     } else {
         res.redirect('/game'); 
     }
     
+}
+
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        } else {
+            console.log('Session destroyed');
+            res.redirect('/game'); 
+        }
+    });
 }

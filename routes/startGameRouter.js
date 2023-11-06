@@ -13,5 +13,6 @@ routes.post('/startGame', startGameController.startGame);
 routes.get('/version1', authenticateUser, startGameController.version1Page);
 routes.get('/version2', authenticateUser, startGameController.version2Page);
 
+routes.get('/logout', startGameController.logout);
 
 module.exports = routes;

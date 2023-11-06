@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+
+        #game-info {
+            background-color: #fff;
+            padding: 10px;
+            border: 2px solid #333;
+            margin: 10px;
+            border-radius: 10px;
+        }
+
+        #sticks-box {
+            background-color: #888;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button:active {
+            background-color: #000;
+        }
+
+        #result {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        #last-move {
+            font-style: italic;
+        }
+    
+        #sticks-box {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+        }
+        /* Style for the individual sticks */
+        .stick {
+            width: 70px; /* Adjust the width as needed */
+            height: auto; /* Maintain the aspect ratio */
+            margin-right: 5px; /* Add some spacing between sticks */
+        }
+    </style>
+    <script type="text/javascript">
+        function exitGame() {
+            fetch('/game/logout', {
+                method: 'GET', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/game'; 
+                } else {
+                    console.error('Logout request failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Nim Game</h1>
+    <div id="game-info">
+        <p>Game Information: <span id="gameInfo"> Number of sticks: <%= sticks %>, Level: <%= level %></p>
+        <p>Player 1: <span id="username"><%= username %></span></p>
+        <p>Player 2: <span id="pc">PC</span></p>
+        <p>Game type: <span id="gameType"><%= gameType %></span></p>
+        <p>Last Move: <span id="last-move">-</span></p>
+        <p>Result: <span id="result">-</span></p>
+    </div>
+    <div id="game-container">
+        <div id="sticks-box">
+            <!-- Sticks will be dynamically added using JavaScript -->
+        </div>
+        <div id="controls">
+            <button id="start-game">Start Game</button>
+            <button id="reset-game">Reset</button>
+            <button id="make-move">Make Move</button>
+            <button id="exit-game" onclick="exitGame()">Exit</button>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const sticksBox = document.getElementById('sticks-box');
+        const stickImageSrc = '../images/stick.png'; 
+
+        for (let i = 0; i < 5; i++) {
+            const stick = document.createElement('img');
+            stick.className = 'stick';
+            stick.src = stickImageSrc;
+            sticksBox.appendChild(stick);
+        }
+    </script>
+</body>
+</html>
