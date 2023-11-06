@@ -1,6 +1,10 @@
 {
   "dependencies": {
-    "express": "^4.18.2"
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "path": "^0.12.7"
   },
   "name": "nim-game",
   "version": "1.0.0",

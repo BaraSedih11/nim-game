@@ -1,46 +1,63 @@
 const path = require('path');
 
-// exports.startGame = (req, res) => {
-//     console.log('Button clicked on the server');
+exports.loginPage = (req, res) => {
+    res.render(path.join(__dirname, '..', '/public', '/login.ejs'))
+}
 
-//     const { username, gameType, level, sticks } = req.body;
+exports.version1Page = (req, res) => {
+    res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+    {
+        username: req.session.username,
+        gameType: req.session.gameType,
+        sticks: req.session.sticks,
+        level: req.session.level,
+    });
+}
+exports.version2Page = (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        } else {
+            console.log('Session destroyed');
+        }
+    });
+    res.sendFile(path.join(__dirname, '..', '/public', '/version2Page', '/version2.html'));
+}
+
+exports.startGame = (req, res) => {
+    const { username, gameType, sticks, level } = req.body;
+    req.session.username = username;
+    req.session.gameType = gameType;
+    req.session.sticks = sticks;
+    req.session.level = level;
+
+    if(req.session && req.session.username){
+        let apiURL = '';
+        if(gameType === 'NIM1'){
+            res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+            {
+                username: req.session.username,
+                gameType: req.session.gameType,
+                sticks: req.session.sticks,
+                level: req.session.level,
+            });
+        } else if (gameType === 'NIM2'){
+            res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'));
+        }
+    } else {
+        res.redirect('/game'); 
+    }
     
-//     // Perform any server-side logic here and send a response back to the client
-//     const response = { message: 'Button click event received on the server' };
-//     res.json(response);
-//   }
+}
 
-//  exports.loginPage = (req, res) => {
-//     //res.sendFile(path.join(__dirname, '..', 'public', 'loginPage', 'index.html'));
-
-//     console.log('Button clicked on the server');
-//     // You can access request data from req.body to get user input
-//     const { username, gameType, level, sticks } = req.body;
-    
-//     // Perform any server-side logic here
-
-//     // Send a response to the client
-//     const response = { message: 'Button click event received on the server' };
-//     res.json(response);
-//   }
-
-//   function initializeGame(gameType, username, sticks, level) {
-//     if (gameType === "NIM1") {
-
-//         const nimGame = {
-//             gameType: "NIM1",
-//             username,
-//             currentPlayer: "user", 
-//             sticks, 
-//             level
-//         };
-//         return nimGame;
-//     } else {
-//         // Handle other game types or return an error
-//         throw new Error("Unsupported game type");
-//     }
-//}
-
-// exports.homePage = (req, res) => {
-//     res.sendFile(path.join(__dirname, 'public', 'loginPage', 'index.html'));
-// }
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        } else {
+            console.log('Session destroyed');
+            res.redirect('/game'); 
+        }
+    });
+}
