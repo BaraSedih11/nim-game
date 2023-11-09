@@ -216,7 +216,7 @@
         <h2>Game Information:</h2>
         <div id="game-info-row">
             <p><strong>Number of sticks:</strong> <span id="gameInfo"><%= sticks %></span></p>
-            <p><strong>Level:</strong> <span id="gameInfo"><%= level %></span></p>
+            <p><strong>Level:</strong> <span id="level"><%= level %></span></p>
             <p><strong>Player 1:</strong> <span id="username"><%= username %></span></p>
             <p><strong>Player 2:</strong> <span id="pc">PC</span></p>
             <p><strong>Game type:</strong> <span id="gameType"><%= gameType %></span></p>
@@ -229,7 +229,7 @@
             <!-- Sticks will be dynamically added using JavaScript -->
         </div>
         <div id="controls">
-            <button id="start-game" onclick="startGame()">Start Game</button>
+            <button id="start-game">Start Game</button>
             <button id="reset-game" onclick="resetGame()">Reset</button>
             <button id="make-move">Make Move</button>
             <button id="exit-game" onclick="exitGame()">Exit</button>
@@ -251,10 +251,6 @@
                     // Create a button element
                     const button = document.createElement('button');
                     button.className = 'stick-button'; // Add a class for styling
-
-                    // // Calculate the row number and add it as a class
-                    // const rowNumber = Math.floor(i / sticksInRow) + 1;
-                    // button.className = `stick-button row-${rowNumber}`;
 
                     // Create an image element and set its source
                     const stick = document.createElement('img');
@@ -278,39 +274,22 @@
 
             // Add a click event listener to each stick button
             stickButtons.forEach((stickButton, index) => {
-                stickButton.addEventListener('click', () => {
-                    // Toggle the selected class to simulate the active state
-                    stickButton.classList.toggle('selected');
+                // Adjust the index to start from 1 and assign it as the unique ID
+                stickButton.id = `stick-${index + 1}`;
 
-                    // Update the value based on the active state
-                    if (stickButton.classList.contains('selected')) {
-                        // Set the value for the active state (e.g., 1)
-                        stickButton.value = 1;
-                    } else {
-                        // Set the value for the inactive state (e.g., 0)
-                        stickButton.value = 0;
-                    }
+                let buttonIndex = parseInt(stickButton.id.split('-')[1], 10);
+                console.log(buttonIndex);
 
-                    // Adjust the index to start from 1 and assign it as the unique ID
-                    stickButton.id = `stick-${index + 1}`;
-
-                    let buttonIndex = parseInt(stickButton.id.split('-')[1], 10);
-                    console.log(buttonIndex);
-
-                    if(buttonIndex == 1) {
-                        stickButton.classList.add(`row-${1}`);
-                    } else if(buttonIndex > 1 && buttonIndex <= 4) {
-                        stickButton.classList.add(`row-${2}`);
-                    } else if(buttonIndex > 4 && buttonIndex <= 9) {
-                        stickButton.classList.add(`row-${3}`);
-                    } else if(buttonIndex > 9 && buttonIndex <= 16){
-                        stickButton.classList.add(`row-${4}`);
-                    }                  
-
-                });
+                if(buttonIndex == 1) {
+                    stickButton.classList.add(`row-${1}`);
+                } else if(buttonIndex > 1 && buttonIndex <= 4) {
+                    stickButton.classList.add(`row-${2}`);
+                } else if(buttonIndex > 4 && buttonIndex <= 9) {
+                    stickButton.classList.add(`row-${3}`);
+                } else if(buttonIndex > 9 && buttonIndex <= 16){
+                    stickButton.classList.add(`row-${4}`);
+                }                   
             });
-
-
         }
 
 
@@ -320,12 +299,11 @@
         };
 
 
-        // handling the buttons
-        
-        function startGame(){
+        // handling the buttons -------------------------------------------------------------------
 
-            resetGame();
-            
+        function startGame() {
+            console.log("start game");
+
             const randomValue = Math.random();
             let startingPlayer;
             if (randomValue < 0.5) {
@@ -333,81 +311,166 @@
             } else {
                 startingPlayer = 2;
             }
+            let isPlayer1Turn = false;
+            let isPlayer2Turn = false;
             
-            if(startingPlayer == 1){
-                
-                let isPlayer1Turn = true; 
+            let currentRowClass = null; 
 
-                // Get all the stick button elements
-                const stickButtons = document.querySelectorAll('.stick-button');
+            if (startingPlayer === 1) {
+                isPlayer1Turn = true;
+                console.log("Player one turn");
+                player1Move();
+            } else if (startingPlayer === 2) {
+                isPlayer2Turn = true;
+                console.log("Player two turn");
+                player2Move();
+            }
+        }
 
-                stickButtons.forEach((stickButton, index) => { 
-                    stickButton.addEventListener('click', () => {
-                        console.log('Clicked');
-                        // Check if the button is in the same row as the previously selected button
-                        if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
-                            console.log(true);
-                            // Toggle the selected class to simulate the active state
+
+        function player1Move(){
+            isPlayer1Turn = false;
+            isPlayer2Turn = true;
+            // Store the previously selected button
+            let prevSelectedButton = null;
+
+            const stickButtons = document.querySelectorAll('.stick-button');
+
+            stickButtons.forEach((stickButton, index) => {
+                stickButton.addEventListener('click', () => {
+                    console.log(index);
+                    if (!stickButton.classList.contains('selected')) {
+                        if (prevSelectedButton) {
+                            // Check if the button is in the same row as the previously selected button
+                            if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
+                                console.log('Same row, allowing selection.');
+                                stickButton.classList.toggle('selected');
+                                prevSelectedButton = stickButton; // Update the previously selected button
+                            } else {
+                                console.log('Different row, preventing selection.');
+                            }
+                        } else {
+                            // If no previously selected button, allow the selection
+                            console.log('Allowing initial selection.');
                             stickButton.classList.toggle('selected');
+                            currentRowClass = stickButton.classList[1]; // Store the current row class
+                            prevSelectedButton = stickButton; // Update the previously selected button
                         }
-                        console.log("hi");
-                        deactivateButtonsInOtherRows(stickButton);
-                    });
-                });
 
-                function isButtonInSameRowAsPreviouslySelected(currentButton) {
+                    } else {
+                        // Unselect the button
+                        stickButton.classList.toggle('selected');
+
+                        // Check if all buttons in the current row are unselected
+                        if (!document.querySelector(`.stick-button.${currentRowClass}.selected`)) {
+                            // If all buttons in the current row are unselected, clear the current row class
+                            currentRowClass = null;
+                            prevSelectedButton = null; // Reset the previously selected button
+                        }
+                    }
+                });
+            });
+
+            function isButtonInSameRowAsPreviouslySelected(currentButton) {
+                if (prevSelectedButton) {
                     // Get the row class of the previously selected button
-                    const prevSelectedButton = document.querySelector('.selected');
-                    const prevSelectedRowClass = prevSelectedButton ? prevSelectedButton.classList[1] : null;
+                    const prevSelectedRowClass = prevSelectedButton.classList[1];
 
                     // Get the row class of the current button
                     const currentRowClass = currentButton.classList[1];
 
                     // Check if the current button and the previously selected button are in the same row
                     return prevSelectedRowClass === currentRowClass;
+                } else {
+                    // If there is no previously selected button, return true to allow selection
+                    return true;
                 }
-
-                function deactivateButtonsInOtherRows(currentButton) {
-                    // Get the row class of the current button
-                    const currentRowClass = currentButton.classList[1];
-
-                    // Find all buttons with the same row class as the current button
-                    const buttonsInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}`);
-
-                    // Find all buttons in other rows
-                    const buttonsInOtherRows = document.querySelectorAll(`.stick-button:not(.${currentRowClass})`);
-
-                    // Disable all buttons in other rows
-                    buttonsInOtherRows.forEach(button => {
-                        button.disabled = true;
-                    });
-
-                    // Enable all buttons in the current row
-                    buttonsInCurrentRow.forEach(button => {
-                        button.disabled = false;
-                    });
-                }
-
-
-
-
-            } else if (startingPlayer == 2){
-
             }
 
+            function deactivateButtonsInOtherRows(currentButton) {
+                // Get the row class of the current button
+                const currentRowClass = currentButton.classList[1];
+
+                // Find all buttons with the same row class as the current button
+                const buttonsInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}`);
+
+                // Find all buttons in other rows
+                const buttonsInOtherRows = document.querySelectorAll(`.stick-button:not(.${currentRowClass})`);
+
+                // Disable all buttons in other rows
+                buttonsInOtherRows.forEach(button => {
+                    button.disabled = true;
+                });
+
+                // Enable all buttons in the current row
+                buttonsInCurrentRow.forEach(button => {
+                    button.disabled = false;
+                });
+            }
+
+
         }
+
+        function player2Move(){
+            isPlayer1Turn = true;
+            isPlayer2Turn = false;
+
+            // Now the algorithm start
+
+            const levelElement = document.getElementById('level');
+            const levelValue = levelElement.textContent; // or levelElement.innerText
+
+            if(levelValue == "Easy"){
+                // start easy algorithm
+
+
+
+
+
+            } else if(levelValue == 'Meduim'){
+                console.log("You are meduil");
+            } else if(levelValue == 'Hard'){
+                console.log("You are hard");
+            }
+
+
+            makeMove();
+        }
+
+        function makeMove() {
+            // Get the current row class
+            const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);
+            console.log(selectedSticksInCurrentRow);
+
+            if (selectedSticksInCurrentRow.length > 0) {
+                // Hide the selected sticks in the current row
+                selectedSticksInCurrentRow.forEach(stickButton => {
+                    stickButton.style.display = 'none';
+                });
+
+                // Check whose row is selected (player 1's or player 2's turn)
+                if (isPlayer1Turn) {
+                    player2Move();
+                } else {
+                    player1Move();
+                }
+            }
+        }
+
+        // Call the startGame function when the "start" button is clicked.
+        const startButton = document.getElementById('start-game');
+        startButton.addEventListener('click', startGame);
 
         // Handle the "Move" button click event
         const moveButton = document.getElementById('make-move');
         moveButton.addEventListener('click', () => {
             console.log('Selected sticks: ', selectedSticks);
-            // Implement your game logic here
-
-
+            makeMove();
         });
 
         function resetGame() {
             console.log('Reset Game');
+
             // Clear existing sticks
             const sticksBox = document.getElementById('sticks-box');
             sticksBox.innerHTML = '';
