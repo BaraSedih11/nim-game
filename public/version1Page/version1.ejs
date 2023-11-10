@@ -216,6 +216,8 @@
         const selectedSticks = [];
 
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+
 </head>
 <body>
     <h1>Nim Game</h1>
@@ -548,8 +550,9 @@
 
                 let currentState = createGameNode();
                 console.log(currentState);
-                let bestMove = getBestMove(currentState, 4, true);
-                makeMove(bestMove);
+                let bestMove = calculateBestMove(currentState, 4, true);
+                
+                console.log(bestMove);
 
                 console.log(currentRowClass);
 
@@ -595,6 +598,7 @@
 
                         const value = alphabeta(origin, depth, alpha, beta, maximizingPlayer);
 
+                        console.log(value);
                         console.log('passed2');
 
                         // Undo the move
@@ -630,44 +634,7 @@
                     return gameState;
                 }
 
-                function minimax(node, depth, alpha, beta, maximizingPlayer) {
-                    if (depth === 0 || Object.values(gameState).every(value => value === 0)) {
-                        return evaluateGameState(gameState);
-                    }
-
-                    if (maximizingPlayer) {
-                        let value = -Infinity;
-
-                        for (const child of generateChildren(gameState)) {
-                            value = Math.max(value, minimax(child, depth - 1, alpha, beta, false));
-                            alpha = Math.max(alpha, value);
-
-                            if (beta <= alpha) {
-                                break;
-                            }
-                        }
-
-                        return value;
-                    } else {
-                        let value = Infinity;
-
-                        for (const child of generateChildren(gameState)) {
-                            value = Math.min(value, minimax(child, depth - 1, alpha, beta, true));
-                            beta = Math.min(beta, value);
-
-                            if (beta <= alpha) {
-                                break;
-                            }
-                        }
-
-                        return value;
-                    }
-                }
-
                 function alphabeta(node, depth, alpha, beta, maximizingPlayer) {
-                    console.log('started test2');
-                    console.log(node);
-
                     if (depth === 0 || isTerminalNode(node)) {
                         console.log('pass1');
                         return evaluateNode(node);
@@ -676,9 +643,13 @@
                     console.log('pass2');
 
                     if (maximizingPlayer) {
+                        console.log('here1');
                         let value = -Infinity;
-
-                        for (const child of generateChildren(node)) {
+                        let children = [];
+                        children = generateChildren(node);
+                        console.log('test3------------------------------------------------------------------------------------');
+                        for (const child of children) {
+                            console.log(child);
                             value = Math.max(value, alphabeta(child, depth - 1, alpha, beta, false));
                             alpha = Math.max(alpha, value);
 
@@ -686,12 +657,17 @@
                                 break;
                             }
                         }
-
+                        console.log(value);
                         return value;
                     } else {
+                        console.log('here2');
                         let value = Infinity;
+                        console.log(node);
+                        let children = [];
+                        children = generateChildren(node);
+                        console.log(children);
 
-                        for (const child of generateChildren(node)) {
+                        for (const child of children) {
                             value = Math.min(value, alphabeta(child, depth - 1, alpha, beta, true));
                             beta = Math.min(beta, value);
 
@@ -699,7 +675,8 @@
                                 break;
                             }
                         }
-
+                        console.log(value);
+                        console.log('finished------------------------');
                         return value;
                     }
                 }
@@ -723,27 +700,37 @@
                 }
 
                 function generateChildren(node) {
-                    const children = [];
+                    let children = [];
+                    let j = 0;
 
+                    console.log('checking the node');
+                    console.log(node);
                     for (const row in node) {
                         // Iterate over each row in the current game state
                         if (node[row] > 0) {
                             // Check if the row has sticks
                             for (let i = 1; i <= node[row]; i++) {
-                                // Generate child nodes by simulating possible moves
+                                console.log('testttttttttttttttttttttttttttt');
+                                
                                 const childNode = { ...node };
+                                
+                                console.log(childNode);
                                 childNode[row] -= i; // Simulate removing i sticks from the row
-                                children.push(childNode);
+                                console.log(childNode);
+                                children.push({ ...childNode });
+                                console.log(children);
                             }
                         }
                     }
-
+                    console.log(children);
                     return children;
                 }
-
-
-            }    
                 
+                function deepCopy(obj) {
+                    return JSON.parse(JSON.stringify(obj));
+
+                }    
+            }
 
             makeMove();
 
