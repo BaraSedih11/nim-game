@@ -14,15 +14,13 @@ exports.version1Page = (req, res) => {
     });
 }
 exports.version2Page = (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    req.session.destroy((err) => {
-        if (err) {
-            console.error('Error destroying session:', err);
-        } else {
-            console.log('Session destroyed');
-        }
+    res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'),
+    {
+        username: req.session.username,
+        gameType: req.session.gameType,
+        sticks: req.session.sticks,
+        level: req.session.level,
     });
-    res.sendFile(path.join(__dirname, '..', '/public', '/version2Page', '/version2.html'));
 }
 
 exports.startGame = (req, res) => {
@@ -43,7 +41,13 @@ exports.startGame = (req, res) => {
                 level: req.session.level,
             });
         } else if (gameType === 'NIM2'){
-            res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'));
+            res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'),
+            {
+                username: req.session.username,
+                gameType: req.session.gameType,
+                sticks: req.session.sticks,
+                level: req.session.level,
+            });
         }
     } else {
         res.redirect('/game'); 

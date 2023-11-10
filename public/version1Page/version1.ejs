@@ -236,16 +236,16 @@
             <!-- Sticks will be dynamically added using JavaScript -->
         </div>
         <div id="controls">
-            <button id="start-game">Start Game</button>
+            <button id="start-game" onclick="startGame()">Start Game</button>
             <button id="reset-game" onclick="resetGame()">Reset</button>
-            <button id="make-move">Make Move</button>
+            <button id="make-move" onclick="makeMove()">Make Move</button>
             <button id="exit-game" onclick="exitGame()">Exit</button>
         </div>
     </div>
 
     <div id="game-shows">
         <p id="last-move"><strong>Last move:</strong></p>
-        <p id="result"><strong>Result:</strong></p>
+        <p id="result"><strong><%= username %> : 0 vs PC : 0</strong></p>
     </div>
     <script type="text/javascript">
         function generateSticks() {
@@ -339,51 +339,62 @@
             
             let prevSelectedButton = null;
             currentRowClass = null;
+            let clickInProgress = false;
 
             const stickButtons = document.querySelectorAll('.stick-button');
 
-            stickButtons.forEach((stickButton, index) => {
+            stickButtons.forEach((stickButton) => {
                 if (!stickButton.classList.contains('removed')) {
-                    stickButton.addEventListener('click', (event) => {
-                        event.stopPropagation();
-
-                        console.log('Clicked');
-                        if (!stickButton.classList.contains('selected')) {
-                            if (prevSelectedButton) {
-                                if(!prevSelectedButton.classList.contains('removed')){
-                                    console.log(prevSelectedButton);
-                                    console.log(stickButton);
-                                    // Check if the button is in the same row as the previously selected button
-                                    if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
-                                        console.log('Same row, allowing selection.');
-                                        stickButton.classList.add('selected');
-                                        prevSelectedButton = stickButton; // Update the previously selected button
-                                    } else {
-                                        console.log('Different row, preventing selection.');
-                                    }
-                                }
-                            } else {
-                                // If no previously selected button, allow the selection
-                                console.log('Allowing initial selection.');
-                                stickButton.classList.add('selected');
-                                currentRowClass = stickButton.classList[1]; // Store the current row class
-                                prevSelectedButton = stickButton; // Update the previously selected button
-                            }
-                        } else if (stickButton.classList.contains('selected')) {
-                            // Unselect the button
-                            stickButton.classList.remove('selected');
-
-                            // Check if all buttons in the current row are unselected
-                            if (!document.querySelector(`.stick-button.${currentRowClass}.selected`)) {
-                                // If all buttons in the current row are unselected, clear the current row class
-                                currentRowClass = null;
-                                prevSelectedButton = null; // Reset the previously selected button
-                            }
-                        }
-                    });
+                    stickButton.removeEventListener('click', handleStickClick); // Remove existing listeners
+                    stickButton.addEventListener('click', handleStickClick); // Attach the new listener
                 }
             });
 
+            
+            function handleStickClick(event) {
+                event.preventDefault(); // Prevent the default action
+                event.stopPropagation(); // Stop the event from propagating
+                const stickButton = event.currentTarget; 
+
+                console.log('Clicked');
+                if (!stickButton.classList.contains('selected')) {
+                    if (prevSelectedButton) {
+                        if (!prevSelectedButton.classList.contains('removed')) {
+                            // Check if the button is in the same row as the previously selected button
+                            if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
+                                console.log('Same row, allowing selection.');
+                                stickButton.classList.add('selected');
+                                prevSelectedButton = stickButton; // Update the previously selected button
+                            } else {
+                                console.log('Different row, preventing selection.');
+                            }
+                        }
+                    } else {
+                        // If no previously selected button, allow the selection
+                        console.log('Allowing initial selection.');
+                        stickButton.classList.add('selected');
+                        currentRowClass = stickButton.classList[1]; // Store the current row class
+                        prevSelectedButton = stickButton; // Update the previously selected button
+                    }
+                } else if (stickButton.classList.contains('selected')) {
+                    console.log('Unselect');
+                    // Unselect the button
+                    stickButton.classList.remove('selected');
+
+                    // Check if all buttons in the current row are unselected
+                    if (!document.querySelector(`.stick-button.${currentRowClass}.selected`)) {
+                        // If all buttons in the current row are unselected, clear the current row class
+                        currentRowClass = null;
+                        prevSelectedButton = null; // Reset the previously selected button
+                    }
+                }
+
+
+                console.log('End');
+                console.log(stickButton);
+            }   
+                
+            
             function isButtonInSameRowAsPreviouslySelected(currentButton) {
                 if (prevSelectedButton) {
                     // Get the row class of the previously selected button
@@ -422,10 +433,6 @@
                     if(!stickButton.classList.contains('removed')){
                         currentRowClass = stickButton.classList[1];
                         availableRows[index] = stickButton.classList[1];
-                        
-                        // if (!availableRows[index]) {
-                        //     availableRows[index] = [];
-                        // }
                     }
                 });
 
@@ -461,14 +468,288 @@
                     }
                 }
                 
-            } else if (levelValue === 'Medium') {
-                console.log("You are medium");
-            } else if (levelValue === 'Hard') {
-                console.log("You are hard");
-            }
+            } 
+            else if (levelValue === 'Medium') {
+                console.log('Medium');
+                
+                const availableRows = [];
+                const nimSum = calculateNimSum();
+
+                // Loop through the stick buttons to identify available rows and gather sticks
+                const stickButtons = document.querySelectorAll(`.stick-button:not(.removed)`);
+                stickButtons.forEach((stickButton, index) => {
+                        currentRowClass = stickButton.classList[1];
+                        console.log(currentRowClass);
+                        availableRows[index] = stickButton.classList[1];
+                    
+                });
+
+                // Find the first heap with a bit set in nimSum
+                let selectedRowKey = -1;
+                for (let i = 0; i < availableRows.length; i++) {
+                    if ((nimSum & (1 << i)) !== 0) {
+                        selectedRowKey = i;
+                        break;
+                    }
+                }
+
+                // If nim-sum is 0 (losing position), make a random move
+                if (selectedRowKey === -1) {
+                    selectedRowKey = Math.floor(Math.random() * availableRows.length);
+                }
+
+                // Get the selected row
+                
+                currentRowClass = availableRows[selectedRowKey];
+                const selectedRow = document.querySelectorAll(`.stick-button.${currentRowClass}:not(.removed)`);
+
+                console.log('test');
+                console.log(currentRowClass);
+
+                // Choose a strategy based on the number of sticks in the row
+                let numberOfSticksToPick;
+
+                if (selectedRow.length % 3 === 0) {
+                    // If the number of sticks is a multiple of 3, pick 1 or 2 sticks randomly
+                    numberOfSticksToPick = Math.floor(Math.random() * 2) + 1;
+                } else {
+                    // Otherwise, pick a random number of sticks
+                    numberOfSticksToPick = Math.floor(Math.random() * selectedRow.length) + 1;
+                }
+
+                console.log('tessssttttt');
+                console.log(selectedRow);
+
+                // Mark the randomly selected sticks as 'selected'
+                for (let i = 0; i < numberOfSticksToPick; i++) {
+                    const randomIndex = Math.floor(Math.random() * selectedRow.length);
+                    console.log("random index : " + randomIndex);
+                    selectedRow[randomIndex].classList.add('selected');
+                }
+                
+                
+                function calculateNimSum() {
+                    let nimSum = 0;
+
+                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+                    stickButtons.forEach((stickButton, index) => {
+                        if (stickButton.classList.contains('selected')) {
+                            nimSum ^= index + 1; // XOR with the heap size
+                        }
+                    });
+
+                    return nimSum;
+                }
+
+            } 
+            else if (levelValue === 'Hard') {   
+                // here we go 
+                console.log('hard');
+
+                let currentState = createGameNode();
+                console.log(currentState);
+                let bestMove = getBestMove(currentState, 4, true);
+                makeMove(bestMove);
+
+                console.log(currentRowClass);
+
+                function calculateBestMove() {
+                    const depth = 4; // shallow depth
+                    const alpha = -Infinity;
+                    const beta = Infinity;
+                    const maximizingPlayer = true;
+
+                    const availableRows = [];
+                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+
+                    stickButtons.forEach((stickButton, index) => {
+                        currentRowClass = stickButton.classList[1];
+                        availableRows[index] = currentRowClass;
+                    });
+
+                    let bestValue = -Infinity;
+                    let bestMove = null;
+
+                    for (const rowClass of availableRows) {
+                        const selectedRow = document.querySelectorAll(`.stick-button.${rowClass}:not(.removed)`);
+
+                        // Choose a strategy based on the number of sticks in the row
+                        let numberOfSticksToPick;
+
+                        if (selectedRow.length % 3 === 0) {
+                            numberOfSticksToPick = Math.floor(Math.random() * 2) + 1;
+                        } else {
+                            numberOfSticksToPick = Math.floor(Math.random() * selectedRow.length) + 1;
+                        }
+
+                        // Simulate the move
+                        for (let i = 0; i < numberOfSticksToPick; i++) {
+                            const randomIndex = Math.floor(Math.random() * selectedRow.length);
+                            selectedRow[randomIndex].classList.add('selected');
+                        }
+
+                        // Create the origin node based on the current state of the game
+                        const origin = createGameNode(); 
+
+                        console.log('test2');
+
+                        const value = alphabeta(origin, depth, alpha, beta, maximizingPlayer);
+
+                        console.log('passed2');
+
+                        // Undo the move
+                        for (let i = 0; i < numberOfSticksToPick; i++) {
+                            const randomIndex = Math.floor(Math.random() * selectedRow.length);
+                            selectedRow[randomIndex].classList.remove('selected');
+                        }
+
+                        if (value > bestValue) {
+                            bestValue = value;
+                            bestMove = rowClass;
+                        }
+                    }
+                    console.log(bestMove );
+                    return bestMove;
+                }
+
+                function createGameNode() {
+                    const gameState = {};
+
+                    // Get all stick buttons that are not removed
+                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+
+                    stickButtons.forEach((stickButton, index) => {
+                        const rowClass = stickButton.classList[1];
+                        if (!gameState[rowClass]) {
+                            gameState[rowClass] = 1;
+                        } else {
+                            gameState[rowClass]++;
+                        }
+                    });
+
+                    return gameState;
+                }
+
+                function minimax(node, depth, alpha, beta, maximizingPlayer) {
+                    if (depth === 0 || Object.values(gameState).every(value => value === 0)) {
+                        return evaluateGameState(gameState);
+                    }
+
+                    if (maximizingPlayer) {
+                        let value = -Infinity;
+
+                        for (const child of generateChildren(gameState)) {
+                            value = Math.max(value, minimax(child, depth - 1, alpha, beta, false));
+                            alpha = Math.max(alpha, value);
+
+                            if (beta <= alpha) {
+                                break;
+                            }
+                        }
+
+                        return value;
+                    } else {
+                        let value = Infinity;
+
+                        for (const child of generateChildren(gameState)) {
+                            value = Math.min(value, minimax(child, depth - 1, alpha, beta, true));
+                            beta = Math.min(beta, value);
+
+                            if (beta <= alpha) {
+                                break;
+                            }
+                        }
+
+                        return value;
+                    }
+                }
+
+                function alphabeta(node, depth, alpha, beta, maximizingPlayer) {
+                    console.log('started test2');
+                    console.log(node);
+
+                    if (depth === 0 || isTerminalNode(node)) {
+                        console.log('pass1');
+                        return evaluateNode(node);
+                    }
+
+                    console.log('pass2');
+
+                    if (maximizingPlayer) {
+                        let value = -Infinity;
+
+                        for (const child of generateChildren(node)) {
+                            value = Math.max(value, alphabeta(child, depth - 1, alpha, beta, false));
+                            alpha = Math.max(alpha, value);
+
+                            if (beta <= alpha) {
+                                break;
+                            }
+                        }
+
+                        return value;
+                    } else {
+                        let value = Infinity;
+
+                        for (const child of generateChildren(node)) {
+                            value = Math.min(value, alphabeta(child, depth - 1, alpha, beta, true));
+                            beta = Math.min(beta, value);
+
+                            if (beta <= alpha) {
+                                break;
+                            }
+                        }
+
+                        return value;
+                    }
+                }
+
+                // Helper functions
+                function isTerminalNode(node) {
+                    return getTotalSticks(node) === 1;
+                }
+
+
+                function evaluateNode(node) {
+                    if (isTerminalNode(node)) {
+                        alert('Game Over! Player 1 wins!');
+                        resetGame(1, 0); 
+                    } 
+                }
+
+                function getTotalSticks(node) {
+                    // Calculate the total number of sticks in the game state
+                    return Object.values(node).reduce((acc, sticks) => acc + sticks, 0);
+                }
+
+                function generateChildren(node) {
+                    const children = [];
+
+                    for (const row in node) {
+                        // Iterate over each row in the current game state
+                        if (node[row] > 0) {
+                            // Check if the row has sticks
+                            for (let i = 1; i <= node[row]; i++) {
+                                // Generate child nodes by simulating possible moves
+                                const childNode = { ...node };
+                                childNode[row] -= i; // Simulate removing i sticks from the row
+                                children.push(childNode);
+                            }
+                        }
+                    }
+
+                    return children;
+                }
+
+
+            }    
+                
 
             makeMove();
-        }
+
+            
+            }   
+
 
 
         function makeMove() {
@@ -477,7 +758,7 @@
             const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);
             console.log(selectedSticksInCurrentRow.length);
 
-            const selectedNumber = selectedSticksInCurrentRow.length;
+            let selectedNumber = selectedSticksInCurrentRow.length;
             console.log(selectedNumber);
 
             let totalUnRemoved = 0;
@@ -503,45 +784,45 @@
                     button.disabled = true;
                     button.style.display = 'none';
                 });
+            }
+
+            let player1Score = 0;
+            let player2Score = 0;
 
 
-                if(totalUnRemoved == 1){
-                    //game finished
-                    if(isPlayer2Turn){
-                        alert('Game Over! Player 1 wins!');
-                        // update the win score
-                    } else {
-                        alert('Game Over! Player 2 wins!');
-                    }
-                    resetGame();
+                
+            if(totalUnRemoved == 1){
+                //game finished
+                if (isPlayer2Turn) {
+                    alert('Game Over! Player 1 wins!');
+                    player1Score++;
                 } else {
-                    // Reset global variables
-                    currentRowClass = null;
-
-                    // Check whose row is selected (player 1's or player 2's turn)
-                    if (isPlayer1Turn) {
-                        console.log('player1 now');
-                        player1Move();
-                    } else {
-                        console.log('player2 now');
-                        player2Move();
-                    }
+                    alert('Game Over! Player 2 wins!');
+                    player2Score++;
                 }
-            } 
+                    resetGame(player1Score, player2Score);
+            } else {
+                // Reset global variables
+                currentRowClass = null;
+
+                // Check whose row is selected (player 1's or player 2's turn)
+                if (isPlayer1Turn) {
+                    console.log('player1 now');
+                    player1Move();
+                } else {
+                    console.log('player2 now');
+                    player2Move();
+                }
+            }
+             
         }
 
+        function updateScores(score1, score2) {
+            const resultValue = document.getElementById('result');
+            resultValue.innerHTML = `Player1 : ${score1} vs PC : ${score2}`;
+        }
 
-        // Call the startGame function when the "start" button is clicked.
-        const startButton = document.getElementById('start-game');
-        startButton.addEventListener('click', startGame);
-
-        // Handle the "Move" button click event
-        const moveButton = document.getElementById('make-move');
-        moveButton.addEventListener('click', () => {
-            makeMove();
-        });
-
-        function resetGame() {
+        function resetGame(score1, score2) {
             console.log('Reset Game');
 
             // Clear existing sticks
@@ -549,7 +830,12 @@
             sticksBox.innerHTML = '';
             // Generate new sticks
             generateSticks();
+
+            // display the result
+            updateScores(score1, score2);
         }
+
+
        
         function exitGame() {
             fetch('/game/logout', {

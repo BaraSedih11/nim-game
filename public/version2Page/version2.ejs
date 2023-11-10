@@ -1,12 +1,581 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <style>
+        body {
+            font-family: 'YourNewFont', sans-serif; /* Change 'YourNewFont' to the desired font-family */
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #007BFF; /* Blue color for the game title */
+            margin-top: 20px;
+            font-size: 28px; /* Increase the font size for the title */
+        }
+
+        #game-info h2 {
+            font-size: 24px; 
+            font-weight: bold; 
+            font-family: 'YourNewFont', sans-serif; 
+            text-align: left; 
+            padding-left: 10px;
+        }
+
+
+        #game-info {
+            background-color: #fff;
+            padding: 10px;
+            border: 2px solid #007BFF; /* Blue border color */
+            margin: 10px;
+            border-radius: 10px;
+            justify-content: space-between; /* Elements appear in a row */
+        }
+        #game-info-row {
+            display: flex;
+            background-color: #fff;
+            padding: 10px;
+            margin: 10px;
+            justify-content: space-between; /* Elements appear in a row */
+            margin-left: 40px;
+            margin-right: 40px;
+        }
+
+        #game-info p {
+            font-size: 20px; /* Increase text size */
+            font-weight: bold; /* Apply bold font */
+            font-family: 'YourNewFont', sans-serif; /* Add the desired font-family */
+        }
+
+
+        #sticks-box {
+            background-color: #6a7a77; /* Lively orange background color for sticks box */
+            padding: 20px;
+            margin: 10px;
+            margin-top: 20px;
+            border: 1px solid #007BFF; /* Blue border color */
+            border-radius: 5px;
+            justify-content: center;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        label {
+            color: #007BFF; /* Blue color for labels */
+            font-size: 18px; /* Increase the font size for labels */
+            font-family: 'YourNewFont', sans-serif; /* Add the desired font-family */
+        }
+
+        input, select {
+            padding: 15px; /* Increase padding */
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in width */
+            font-size: 18px; /* Increase the font size */
+            background-color: #555; /* Dark background for input/select elements */
+            color: #fff; /* Light text color for input/select elements */
+        }
+
+        button {
+            background-color: #007BFF; /* Blue background for buttons */
+            color: #fff;
+            padding: 15px 30px; /* Increase padding for the button */
+            border: none;
+            border-radius: 5px;
+            margin: 10px 5px; /* Adjust margin for the buttons */
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 18px; /* Increase the font size for the button text */
+        }
+
+        button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+        button:active {
+            background-color: #003966; /* Even darker blue when pressed */
+        }
+
+        #result {
+            font-weight: bold;
+            color: #0d324f; /* Red color for the result text */
+        }
+
+        #last-move {
+            font-style: italic;
+        }
+
+        /* Style for the individual sticks */
+        .stick {
+            width: 100px; /* Adjust the width as needed */
+            height: auto; /* Maintain the aspect ratio */
+            margin-right: 5px; /* Add some spacing between sticks */
+        }
+
+        #game-shows {
+            background-color: #f0f0f0; /* Background color */
+            border: 2px solid #007BFF; /* Border color */
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between; /* Elements appear in a row */
+            padding-left: 50px;
+            padding-right: 500px;
+        }
+
+        #last-move, #result {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333; /* Text color */
+            font-family: 'YourNewFont', sans-serif; /* Font family */
+            margin: 10px;
+        }
+
+        .selected {
+            transition: transform 0.2s, border 0.2s, box-shadow 0.2s; /* Add transition for smooth effect */
+            cursor: pointer; /* Change the cursor to a pointer */
+        }
+
+        /* Style for the button container */
+        #sticks-box {
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+        }
+
+        /* Style for the button */
+        .stick-button {
+            background: none; /* Set the background to transparent or none */
+            border: none; /* Remove any border */
+            padding: 0; /* Remove padding */
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        /* Style for the image inside the button */
+        .stick-button img {
+            width: 100px; /* Set the width of the image */
+            height: auto; /* Maintain the aspect ratio */
+            transition: transform 0.2s; /* Add a transition for a smooth effect on hover */
+        }
+
+        /* Hover effect for the image */
+        .stick-button:hover img {
+            transform: scale(1.1); /* Scale the image slightly on hover */
+        }
+
+        .stick-button:hover {
+            background-color: #354a35; /* Green on hover */
+            color: #fff; /* Change text color to white */
+        }
+
+        /* Style for the stick button when clicked */
+        .stick-button:active {
+            background-color: #202d20; /* Darker green when clicked */
+            color: #fff; /* Change text color to white */
+        }
+
+        /* Style for the selected button */
+        .stick-button.selected {
+            background-color: #202d20; /* Darker green like active state */
+            color: #fff; /* Change text color to white */
+            z-index: 1;
+        }
+
+        .removed {
+            display: none;
+            z-index: 0;
+        }
+
+    </style>
+    <script type="text/javascript">
+        let player1, player2;
+
+        const sticksNumber = <%= sticks %>;
+        const sticksArray = [];
+
+        if(sticksNumber == 4){
+            sticksArray[0] = 1;
+            sticksArray[1] = 3;
+        } else if(sticksNumber == 9){
+            sticksArray[0] = 1;
+            sticksArray[1] = 3;
+            sticksArray[2] = 5;
+        } else if(sticksNumber == 16){
+            sticksArray[0] = 1;
+            sticksArray[1] = 3;
+            sticksArray[2] = 5;
+            sticksArray[3] = 7;
+        }
+
+        const selectedSticks = [];
+
+    </script>
 </head>
 <body>
-    <h1>Hello there 2</h1>
+    <h1>Nim Game</h1>
+    <div id="game-info">
+        <h2>Game Information:</h2>
+        <div id="game-info-row">
+            <p><strong>Number of sticks:</strong> <span id="gameInfo"><%= sticks %></span></p>
+            <p><strong>Level:</strong> <span id="level"><%= level %></span></p>
+            <p><strong>Player 1:</strong> <span id="username"><%= username %></span></p>
+            <p><strong>Player 2:</strong> <span id="pc">PC</span></p>
+            <p><strong>Game type:</strong> <span id="gameType"><%= gameType %></span></p>
+        </div>
+    </div>
     
+
+    <div id="game-container">
+        <div id="sticks-box">
+            <!-- Sticks will be dynamically added using JavaScript -->
+        </div>
+        <div id="controls">
+            <button id="start-game" onclick="startGame()">Start Game</button>
+            <button id="reset-game" onclick="resetGame()">Reset</button>
+            <button id="make-move" onclick="makeMove()">Make Move</button>
+            <button id="exit-game" onclick="exitGame()">Exit</button>
+        </div>
+    </div>
+
+    <div id="game-shows">
+        <p id="last-move"><strong>Last move:</strong></p>
+        <p id="result"><strong><%= username %> : 0 vs PC : 0</strong></p>
+    </div>
+    <script type="text/javascript">
+        function generateSticks() {
+            const sticksBox = document.getElementById('sticks-box');
+            const stickImageSrc = '../images/stick.png';
+            let sticksInRow = 1; // Number of sticks in the current row
+
+            for (let i = 0; i < sticksNumber; i++) {
+                for (let j = 0; j < sticksInRow; j++, i++) {
+                    // Create a button element
+                    const button = document.createElement('button');
+                    button.className = 'stick-button'; // Add a class for styling
+
+                    // Create an image element and set its source
+                    const stick = document.createElement('img');
+                    stick.src = stickImageSrc;
+                    stick.alt = 'Stick Image'; // Add alt text for accessibility
+
+                    // Append the image to the button
+                    button.appendChild(stick);
+
+                    // Append the button to the sticksBox
+                    sticksBox.appendChild(button);
+                }
+
+                sticksInRow += 2; // Increase the number of sticks in the next row
+                const lineBreak = document.createElement('br');
+                sticksBox.appendChild(lineBreak);
+            }
+
+            // Get all the stick button elements
+            const stickButtons = document.querySelectorAll('.stick-button');
+
+            // Add a click event listener to each stick button
+            stickButtons.forEach((stickButton, index) => {
+                // Adjust the index to start from 1 and assign it as the unique ID
+                stickButton.id = `stick-${index + 1}`;
+
+                let buttonIndex = parseInt(stickButton.id.split('-')[1], 10);
+
+                if(buttonIndex == 1) {
+                    stickButton.classList.add(`row-${1}`);
+                } else if(buttonIndex > 1 && buttonIndex <= 4) {
+                    stickButton.classList.add(`row-${2}`);
+                } else if(buttonIndex > 4 && buttonIndex <= 9) {
+                    stickButton.classList.add(`row-${3}`);
+                } else if(buttonIndex > 9 && buttonIndex <= 16){
+                    stickButton.classList.add(`row-${4}`);
+                }                   
+            });
+        }
+
+
+        // Call the function when the page loads
+        window.onload = function () {
+            generateSticks();
+        };
+
+
+        // handling the buttons -------------------------------------------------------------------
+
+        function startGame() {
+            console.log("start game");
+
+            const randomValue = Math.random();
+            let startingPlayer;
+            if (randomValue < 0.5) {
+                startingPlayer = 1;
+            } else {
+                startingPlayer = 2;
+            }
+            let isPlayer1Turn = false;
+            let isPlayer2Turn = false;
+            
+            let currentRowClass = null; 
+
+            if (startingPlayer === 1) {
+                isPlayer1Turn = true;
+                console.log("Player one turn");
+                player1Move();
+            } else if (startingPlayer === 2) {
+                isPlayer2Turn = true;
+                console.log("Player two turn");
+                player2Move();
+            }
+        }
+
+        function player1Move(){
+            isPlayer1Turn = false;
+            isPlayer2Turn = true;
+            
+            let prevSelectedButton = null;
+            currentRowClass = null;
+
+            const stickButtons = document.querySelectorAll('.stick-button');
+
+            stickButtons.forEach((stickButton, index) => {
+                if (!stickButton.classList.contains('removed')) {
+                    stickButton.addEventListener('click', (event) => {
+                        event.stopPropagation();
+
+                        console.log('Clicked');
+                        if (!stickButton.classList.contains('selected')) {
+                            if (prevSelectedButton) {
+                                if(!prevSelectedButton.classList.contains('removed')){
+                                    console.log(prevSelectedButton);
+                                    console.log(stickButton);
+                                    // Check if the button is in the same row as the previously selected button
+                                    if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
+                                        console.log('Same row, allowing selection.');
+                                        stickButton.classList.add('selected');
+                                        prevSelectedButton = stickButton; // Update the previously selected button
+                                    } else {
+                                        console.log('Different row, preventing selection.');
+                                    }
+                                }
+                            } else {
+                                // If no previously selected button, allow the selection
+                                console.log('Allowing initial selection.');
+                                stickButton.classList.add('selected');
+                                currentRowClass = stickButton.classList[1]; // Store the current row class
+                                prevSelectedButton = stickButton; // Update the previously selected button
+                            }
+                        } else if (stickButton.classList.contains('selected')) {
+                            // Unselect the button
+                            stickButton.classList.remove('selected');
+
+                            // Check if all buttons in the current row are unselected
+                            if (!document.querySelector(`.stick-button.${currentRowClass}.selected`)) {
+                                // If all buttons in the current row are unselected, clear the current row class
+                                currentRowClass = null;
+                                prevSelectedButton = null; // Reset the previously selected button
+                            }
+                        }
+                    });
+                }
+            });
+
+            function isButtonInSameRowAsPreviouslySelected(currentButton) {
+                if (prevSelectedButton) {
+                    // Get the row class of the previously selected button
+                    const prevSelectedRowClass = prevSelectedButton.classList[1];
+
+                    // Get the row class of the current button
+                    const currentRowClass = currentButton.classList[1];
+
+                    // Check if the current button and the previously selected button are in the same row
+                    return prevSelectedRowClass === currentRowClass;
+                } else {
+                    // If there is no previously selected button, return true to allow selection
+                    return true;
+                }
+            }
+
+        }
+
+        function player2Move() {
+            isPlayer1Turn = true;
+            isPlayer2Turn = false;
+            currentRowClass = null;
+
+            // Now the algorithm starts
+
+            const levelElement = document.getElementById('level');
+            const levelValue = levelElement.textContent;
+
+            if (levelValue === "Easy") {
+                // Store available sticks for each row
+                const availableRows = [];
+
+                // Loop through the stick buttons to identify available rows and gather sticks
+                const stickButtons = document.querySelectorAll('.stick-button');
+                stickButtons.forEach((stickButton, index) => {
+                    if(!stickButton.classList.contains('removed')){
+                        currentRowClass = stickButton.classList[1];
+                        availableRows[index] = stickButton.classList[1];
+                        
+                        // if (!availableRows[index]) {
+                        //     availableRows[index] = [];
+                        // }
+                    }
+                });
+
+                // Randomly select a row
+                const availableRowKeys = Object.keys(availableRows);
+                const selectedRowKey = availableRowKeys[Math.floor(Math.random() * availableRowKeys.length)];
+                currentRowClass = availableRows[selectedRowKey]; 
+                let selectedRow = []; 
+                
+                let j = 0;
+                const stickButtons2 = document.querySelectorAll(`.stick-button.${currentRowClass}`);
+                stickButtons2.forEach((stickButton, index) => {
+                    if(!stickButton.classList.contains('removed')){
+                        selectedRow[j] = currentRowClass;
+                        j++;
+                    }
+                });
+
+                // Check if there are sticks in the selected row
+                if (selectedRow) {
+                    const numberOfSticksToPick = Math.max(1, Math.min(Math.floor(Math.random() * selectedRow.length) + 1, selectedRow.length));
+                    let breakFlag = numberOfSticksToPick;
+
+                    // Randomly select the sticks and mark them as 'selected'
+                    for (let i = 0; i < numberOfSticksToPick; i++) {
+                        stickButtons.forEach((stickButton, index) => {
+                            if (stickButton.classList.contains(currentRowClass) && !stickButton.classList.contains('selected') && !stickButton.classList.contains('removed') && breakFlag) {
+                                breakFlag--;
+                                stickButton.classList.add('selected');
+                                console.log('done');
+                            }
+                        });
+                    }
+                }
+                
+            } else if (levelValue === 'Medium') {
+                console.log("You are medium");
+            } else if (levelValue === 'Hard') {
+                console.log("You are hard");
+            }
+
+            makeMove();
+        }
+
+
+        function makeMove() {
+            console.log(currentRowClass);
+            // Get the current row class
+            const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);
+            console.log(selectedSticksInCurrentRow.length);
+
+            let selectedNumber = selectedSticksInCurrentRow.length;
+            console.log(selectedNumber);
+
+            let totalUnRemoved = 0;
+            const totalSticks = document.querySelectorAll(`.stick-button`);
+            totalSticks.forEach(button => {
+                if(!button.classList.contains('removed')){
+                    totalUnRemoved++;
+                }
+            });
+            console.log(totalUnRemoved);
+
+            totalUnRemoved -= selectedNumber;
+            if( !totalUnRemoved ){
+                totalUnRemoved++;
+                selectedNumber--;
+            }
+
+
+            if (selectedNumber) {     
+                selectedSticksInCurrentRow.forEach(button => {
+                    button.classList.remove('selected');
+                    button.classList.add('removed');
+                    button.disabled = true;
+                    button.style.display = 'none';
+                });
+            }
+
+            let player1Score = 0;
+            let player2Score = 0;
+
+
+                
+            if(totalUnRemoved == 1){
+                //game finished
+                if (isPlayer2Turn) {
+                    alert('Game Over! Player 1 wins!');
+                    player1Score++;
+                } else {
+                    alert('Game Over! Player 2 wins!');
+                    player2Score++;
+                }
+                    resetGame(player1Score, player2Score);
+            } else {
+                // Reset global variables
+                currentRowClass = null;
+
+                // Check whose row is selected (player 1's or player 2's turn)
+                if (isPlayer1Turn) {
+                    console.log('player1 now');
+                    player1Move();
+                } else {
+                    console.log('player2 now');
+                    player2Move();
+                }
+            }
+             
+        }
+
+        function updateScores(score1, score2) {
+            const resultValue = document.getElementById('result');
+            resultValue.innerHTML = `Player1 : ${score1} vs PC : ${score2}`;
+        }
+
+        function resetGame(score1, score2) {
+            console.log('Reset Game');
+
+            // Clear existing sticks
+            const sticksBox = document.getElementById('sticks-box');
+            sticksBox.innerHTML = '';
+            // Generate new sticks
+            generateSticks();
+
+            // display the result
+            updateScores(score1, score2);
+        }
+
+        
+       
+        function exitGame() {
+            fetch('/game/logout', {
+                method: 'GET', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/game'; 
+                } else {
+                    console.error('Logout request failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+
+    </script>
 </body>
 </html>
