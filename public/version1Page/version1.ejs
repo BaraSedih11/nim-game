@@ -549,73 +549,108 @@
                 console.log('hard');
 
                 let currentState = createGameNode();
-                console.log(currentState);
-                let bestMove = calculateBestMove(currentState, 4, true);
-                
-                console.log(bestMove);
+                console.log('Initial State:', currentState);
+                let bestMove = calculateBestMove();
+                console.log('Best Move:', bestMove);
+                console.log('Final State:', currentState);
 
-                console.log(currentRowClass);
 
+                // functions
                 function calculateBestMove() {
                     const depth = 4; // shallow depth
                     const alpha = -Infinity;
                     const beta = Infinity;
                     const maximizingPlayer = true;
 
-                    const availableRows = [];
-                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
-
-                    stickButtons.forEach((stickButton, index) => {
-                        currentRowClass = stickButton.classList[1];
-                        availableRows[index] = currentRowClass;
-                    });
+                    const availableMoves = getAvailableMoves(); // Get available moves
+                    console.log('AvailableMoves: ' + JSON.stringify(availableMoves));
 
                     let bestValue = -Infinity;
                     let bestMove = null;
 
-                    for (const rowClass of availableRows) {
-                        const selectedRow = document.querySelectorAll(`.stick-button.${rowClass}:not(.removed)`);
-
-                        // Choose a strategy based on the number of sticks in the row
-                        let numberOfSticksToPick;
-
-                        if (selectedRow.length % 3 === 0) {
-                            numberOfSticksToPick = Math.floor(Math.random() * 2) + 1;
-                        } else {
-                            numberOfSticksToPick = Math.floor(Math.random() * selectedRow.length) + 1;
-                        }
-
+                    for (const move of availableMoves) {
                         // Simulate the move
-                        for (let i = 0; i < numberOfSticksToPick; i++) {
-                            const randomIndex = Math.floor(Math.random() * selectedRow.length);
-                            selectedRow[randomIndex].classList.add('selected');
-                        }
+                        console.log('move: ' + JSON.stringify(move));
+                        applyMove(move, currentState);  // Pass currentState to applyMove
 
-                        // Create the origin node based on the current state of the game
-                        const origin = createGameNode(); 
-
-                        console.log('test2');
-
-                        const value = alphabeta(origin, depth, alpha, beta, maximizingPlayer);
-
-                        console.log(value);
-                        console.log('passed2');
-
+                        // Evaluate the move using alpha-beta pruning
+                        const value = alphabeta(currentState, depth, alpha, beta, true);
+                        console.log('Value1: ' + value);
                         // Undo the move
-                        for (let i = 0; i < numberOfSticksToPick; i++) {
-                            const randomIndex = Math.floor(Math.random() * selectedRow.length);
-                            selectedRow[randomIndex].classList.remove('selected');
-                        }
+                        undoMove(move, currentState);  // Pass currentState to undoMove
 
+                        // Update best move if the new value is greater
                         if (value > bestValue) {
                             bestValue = value;
-                            bestMove = rowClass;
+                            bestMove = move;
                         }
+                        console.log('Best Move:::' + JSON.stringify(bestMove));
+                        console.log(bestMove);
+                        console.log('Value2: ' + bestValue);
+
+
                     }
-                    console.log(bestMove );
+                    // Apply the best move and mark the selected sticks
+                    // applyMove(bestMove);
+                    markSelectedSticks(bestMove);
+                    currentRowClass = bestMove.row;
                     return bestMove;
                 }
 
+                // Function to get available moves
+                function getAvailableMoves() {
+                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+                    const rows = new Set();
+                    stickButtons.forEach(stickButton => {
+                        rows.add(stickButton.classList[1]);
+                    });
+
+                    const moves = [];
+
+                    rows.forEach(rowClass => {
+                        const numberOfSticks = document.querySelectorAll(`.stick-button.${rowClass}:not(.removed)`).length;
+                        for (let i = 1; i <= numberOfSticks; i++) {
+                            moves.push({row: rowClass, sticks: i});
+                        }
+                    });
+
+                    return moves;
+                }
+
+
+                function applyMove(move, state) {
+                    // Getting all the available stick-buttons that aren't marked as removed in current selected row
+                    let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
+                    
+                    // Picking the amount of sticks specified in 'move' from the beginning of the row
+                    for(let i = 0; i < move.sticks; i++){
+                        sticks_in_row[i].classList.add('removed');
+                    }
+                    state[move.row] -= move.sticks;
+                }
+
+                function undoMove(move, state) {
+                    // Getting all the stick-buttons marked as removed in current selected row
+                    let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}.removed`);
+                    
+                    // Returning back the amount of sticks specified in 'move' from the end of the row
+                    for(let i = 0; i < move.sticks; i++){
+                        sticks_in_row[sticks_in_row.length-1-i].classList.remove('removed');
+                    }
+                    state[move.row] += move.sticks;
+                }
+
+                // Function to mark selected sticks with a 'selected' class
+                // It assumes that 'move' is an object with properties 'row' and 'sticks'.
+                function markSelectedSticks(move) {
+                    // Get all the stick-buttons for the current row
+                    let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
+                    
+                    // Mark the amount of sticks specified in 'move' as selected from the beginning of the row
+                    for(let i = 0; i < move.sticks; i++){
+                        sticks_in_row[i].classList.add('selected');
+                    }
+                }
                 function createGameNode() {
                     const gameState = {};
 
@@ -630,53 +665,38 @@
                             gameState[rowClass]++;
                         }
                     });
-
+                    console.log('Create Game Node' + gameState);
                     return gameState;
                 }
 
                 function alphabeta(node, depth, alpha, beta, maximizingPlayer) {
+                    console.log('node: '+ JSON.stringify(node));
                     if (depth === 0 || isTerminalNode(node)) {
-                        console.log('pass1');
                         return evaluateNode(node);
                     }
 
-                    console.log('pass2');
-
                     if (maximizingPlayer) {
-                        console.log('here1');
                         let value = -Infinity;
-                        let children = [];
-                        children = generateChildren(node);
-                        console.log('test3------------------------------------------------------------------------------------');
+                        let children = generateChildren(node);
                         for (const child of children) {
-                            console.log(child);
                             value = Math.max(value, alphabeta(child, depth - 1, alpha, beta, false));
                             alpha = Math.max(alpha, value);
-
                             if (beta <= alpha) {
                                 break;
                             }
                         }
-                        console.log(value);
                         return value;
                     } else {
-                        console.log('here2');
                         let value = Infinity;
-                        console.log(node);
-                        let children = [];
-                        children = generateChildren(node);
-                        console.log(children);
-
+                        let children = generateChildren(node);
                         for (const child of children) {
                             value = Math.min(value, alphabeta(child, depth - 1, alpha, beta, true));
                             beta = Math.min(beta, value);
-
                             if (beta <= alpha) {
                                 break;
                             }
                         }
-                        console.log(value);
-                        console.log('finished------------------------');
+                        
                         return value;
                     }
                 }
@@ -686,50 +706,41 @@
                     return getTotalSticks(node) === 1;
                 }
 
-
                 function evaluateNode(node) {
-                    if (isTerminalNode(node)) {
-                        alert('Game Over! Player 1 wins!');
-                        resetGame(1, 0); 
-                    } 
+                    let nimSum = 0;
+                    console.log(JSON.stringify(node));
+
+                    for (const row in node) {
+                        if (node[row] > 0) {
+                            console.log('Testing right now');
+                            console.log(node[row]);
+                            console.log('after');
+                            nimSum ^= node[row];
+                        }
+                    }
+
+                    console.log('Nim sum:', nimSum);
+                    return nimSum;
                 }
 
                 function getTotalSticks(node) {
-                    // Calculate the total number of sticks in the game state
                     return Object.values(node).reduce((acc, sticks) => acc + sticks, 0);
                 }
 
                 function generateChildren(node) {
                     let children = [];
-                    let j = 0;
-
-                    console.log('checking the node');
-                    console.log(node);
                     for (const row in node) {
-                        // Iterate over each row in the current game state
                         if (node[row] > 0) {
-                            // Check if the row has sticks
                             for (let i = 1; i <= node[row]; i++) {
-                                console.log('testttttttttttttttttttttttttttt');
-                                
                                 const childNode = { ...node };
-                                
-                                console.log(childNode);
-                                childNode[row] -= i; // Simulate removing i sticks from the row
-                                console.log(childNode);
-                                children.push({ ...childNode });
-                                console.log(children);
+                                childNode[row] -= i;
+                                children.push(childNode);
                             }
                         }
                     }
-                    console.log(children);
                     return children;
                 }
-                
-                function deepCopy(obj) {
-                    return JSON.parse(JSON.stringify(obj));
-
-                }    
+        
             }
 
             makeMove();
