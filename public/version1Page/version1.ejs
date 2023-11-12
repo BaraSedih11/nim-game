@@ -545,53 +545,63 @@
 
             } 
             else if (levelValue === 'Hard') {   
-                // here we go 
-                console.log('hard');
-
                 let currentState = createGameNode();
                 console.log('Initial State:', currentState);
                 let bestMove = calculateBestMove();
                 console.log('Best Move:', bestMove);
                 console.log('Final State:', currentState);
 
-
                 // functions
+                function createGameNode() {
+                    const gameState = {};
+
+                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+
+                    stickButtons.forEach((stickButton, index) => {
+                        const rowClass = stickButton.classList[1];
+                        if (!gameState[rowClass]) {
+                            gameState[rowClass] = 1;
+                        } else {
+                            gameState[rowClass]++;
+                        }
+                    });
+                    return gameState;
+                }
+
                 function calculateBestMove() {
                     const depth = 4; // shallow depth
                     const alpha = -Infinity;
                     const beta = Infinity;
                     const maximizingPlayer = true;
 
-                    const availableMoves = getAvailableMoves(); // Get available moves
+                    const availableMoves = getAvailableMoves();
                     console.log('AvailableMoves: ' + JSON.stringify(availableMoves));
 
                     let bestValue = -Infinity;
                     let bestMove = null;
 
                     for (const move of availableMoves) {
-                        // Simulate the move
-                        console.log('move: ' + JSON.stringify(move));
-                        applyMove(move, currentState);  // Pass currentState to applyMove
-
                         // Evaluate the move using alpha-beta pruning
-                        const value = alphabeta(currentState, depth, alpha, beta, true);
-                        console.log('Value1: ' + value);
-                        // Undo the move
-                        undoMove(move, currentState);  // Pass currentState to undoMove
+                        if (isValidMove(move)){
+                            applyMove(move, currentState);
 
-                        // Update best move if the new value is greater
-                        if (value > bestValue) {
-                            bestValue = value;
-                            bestMove = move;
+                            const value = alphabeta(currentState, depth, alpha, beta, true);
+                            undoMove(move, currentState);
+
+
+                            // If the move is valid, update the best move
+                            if (value > bestValue) {
+                                bestValue = value;
+                                bestMove = move;
+                            }
                         }
-                        console.log('Best Move:::' + JSON.stringify(bestMove));
-                        console.log(bestMove);
-                        console.log('Value2: ' + bestValue);
-
-
                     }
-                    // Apply the best move and mark the selected sticks
-                    // applyMove(bestMove);
+
+                    // If no valid move is found, generate a new move
+                    if (!bestMove) {
+                        bestMove = getRandomMove();
+                    }
+
                     markSelectedSticks(bestMove);
                     currentRowClass = bestMove.row;
                     return bestMove;
@@ -616,7 +626,22 @@
 
                     return moves;
                 }
+                
+                // Function to check if a move is valid
+                function isValidMove(move) {
+                    const sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
+                    return sticks_in_row.length >= move.sticks;
+                }
 
+
+                // Function to generate a random move
+                function getRandomMove() {
+                    const rows = document.querySelectorAll('.stick-button:not(.removed)');
+                    const randomRow = rows[Math.floor(Math.random() * rows.length)].classList[1];
+                    const sticks_in_row = document.querySelectorAll(`.stick-button.${randomRow}:not(.removed)`);
+                    const randomSticks = Math.floor(Math.random() * sticks_in_row.length) + 1;
+                    return { row: randomRow, sticks: randomSticks };
+                }
 
                 function applyMove(move, state) {
                     // Getting all the available stick-buttons that aren't marked as removed in current selected row
@@ -640,37 +665,17 @@
                     state[move.row] += move.sticks;
                 }
 
-                // Function to mark selected sticks with a 'selected' class
-                // It assumes that 'move' is an object with properties 'row' and 'sticks'.
                 function markSelectedSticks(move) {
-                    // Get all the stick-buttons for the current row
                     let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
                     
-                    // Mark the amount of sticks specified in 'move' as selected from the beginning of the row
                     for(let i = 0; i < move.sticks; i++){
-                        sticks_in_row[i].classList.add('selected');
-                    }
-                }
-                function createGameNode() {
-                    const gameState = {};
-
-                    // Get all stick buttons that are not removed
-                    const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
-
-                    stickButtons.forEach((stickButton, index) => {
-                        const rowClass = stickButton.classList[1];
-                        if (!gameState[rowClass]) {
-                            gameState[rowClass] = 1;
-                        } else {
-                            gameState[rowClass]++;
+                        if (sticks_in_row[i]) {
+                            sticks_in_row[i].classList.add('selected');
                         }
-                    });
-                    console.log('Create Game Node' + gameState);
-                    return gameState;
+                    }
                 }
 
                 function alphabeta(node, depth, alpha, beta, maximizingPlayer) {
-                    console.log('node: '+ JSON.stringify(node));
                     if (depth === 0 || isTerminalNode(node)) {
                         return evaluateNode(node);
                     }
@@ -703,28 +708,27 @@
 
                 // Helper functions
                 function isTerminalNode(node) {
-                    return getTotalSticks(node) === 1;
+                    const keys = Object.keys(node);
+                    let num = 0;
+                    
+                    for(let i = 1 ; i <= keys.length ; i++){
+                        num += node[`row-${i}`];
+                    }
+                    return num === 1;
                 }
 
                 function evaluateNode(node) {
-                    let nimSum = 0;
-                    console.log(JSON.stringify(node));
+                    let total = 0;
 
-                    for (const row in node) {
-                        if (node[row] > 0) {
-                            console.log('Testing right now');
-                            console.log(node[row]);
-                            console.log('after');
-                            nimSum ^= node[row];
-                        }
+                    const keys = Object.keys(node);
+                    let odd = 0;
+                    let sumOdd = 0;
+
+                    for (let i = 1; i <= keys.length; i++) {
+                        odd = node[`row-${i}`] % 2 ? 1 : 0;
+                        sumOdd += odd;
                     }
-
-                    console.log('Nim sum:', nimSum);
-                    return nimSum;
-                }
-
-                function getTotalSticks(node) {
-                    return Object.values(node).reduce((acc, sticks) => acc + sticks, 0);
+                    return sumOdd;
                 }
 
                 function generateChildren(node) {
@@ -746,7 +750,7 @@
             makeMove();
 
             
-            }   
+        }   
 
 
 
@@ -832,9 +836,7 @@
             // display the result
             updateScores(score1, score2);
         }
-
-
-       
+  
         function exitGame() {
             fetch('/game/logout', {
                 method: 'GET', 
