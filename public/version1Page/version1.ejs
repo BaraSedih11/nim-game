@@ -305,7 +305,7 @@
         window.onload = function () {
             generateSticks();
         };
-
+ 
 
         // handling the buttons -------------------------------------------------------------------
 
@@ -569,11 +569,11 @@
                 }
 
                 function calculateBestMove() {
-                    const depth = 4; // shallow depth
+                    const depth = 10; // Adjust the depth as needed
                     const alpha = -Infinity;
                     const beta = Infinity;
-                    const maximizingPlayer = true;
- 
+                    const maximizingPlayer = isPlayer1Turn;
+
                     const availableMoves = getAvailableMoves();
                     console.log('AvailableMoves: ' + JSON.stringify(availableMoves));
 
@@ -582,12 +582,13 @@
 
                     for (const move of availableMoves) {
                         // Evaluate the move using alpha-beta pruning
-                        if (isValidMove(move)){
+                        if (isValidMove(move)) {
                             applyMove(move, currentState);
 
-                            const value = alphabeta(currentState, depth, alpha, beta, true);
+                            const value = alphabeta(currentState, depth, alpha, beta, !maximizingPlayer);
                             undoMove(move, currentState);
 
+                            console.log('Move:', move, 'Value:', value);
 
                             // If the move is valid, update the best move
                             if (value > bestValue) {
@@ -602,10 +603,16 @@
                         bestMove = getRandomMove();
                     }
 
+                    // Update the game state with the best move
+                    applyMove(bestMove, currentState);
                     markSelectedSticks(bestMove);
+
                     currentRowClass = bestMove.row;
                     return bestMove;
                 }
+
+
+
 
                 // Function to get available moves
                 function getAvailableMoves() {
@@ -636,6 +643,7 @@
 
                 // Function to generate a random move
                 function getRandomMove() {
+                    console.log('Random move');
                     const rows = document.querySelectorAll('.stick-button:not(.removed)');
                     const randomRow = rows[Math.floor(Math.random() * rows.length)].classList[1];
                     const sticks_in_row = document.querySelectorAll(`.stick-button.${randomRow}:not(.removed)`);
@@ -710,33 +718,51 @@
                 function isTerminalNode(node) {
                     const keys = Object.keys(node);
                     let num = 0;
-                    
-                    for(let i = 1 ; i <= keys.length ; i++){
-                        num += node[`row-${i}`];
-                    }
-                    return num === 1;
-                }
-
-                function evaluateNode(node) {
-                    let total = 0;
-
-                    const keys = Object.keys(node);
-                    let odd = 0;
-                    let sumOdd = 0;
 
                     for (let i = 1; i <= keys.length; i++) {
-                        odd = node[`row-${i}`] % 2 ? 1 : 0;
-                        sumOdd += odd;
+                        num += node[`row-${i}`] || 0;  // Handle cases where a row might be undefined
                     }
-                    return sumOdd;
+                    return num === 0;
                 }
+
+
+                function evaluateNode(node) {
+                    // Calculate the Nim-Sum of the heap sizes
+                    let nimSum = 0;
+                    for (let i = 1; i <= 4; i++) {
+                        nimSum ^= node[`row-${i}`] || 0;  // Handle cases where a row might be undefined
+                    }
+
+                    // If nim-sum is 0 (losing position), return a negative value
+                    if (nimSum === 0) {
+                        return -1;
+                    }
+
+                    // Otherwise, return a positive value
+                    return 1;
+                }
+
+
+
+
+                // Helper function to calculate the nimSum of an array of heap sizes
+                function calculateNimSum(heapSizes) {
+                    let nimSum = 0;
+                    for (let i = 0; i < heapSizes.length; i++) {
+                        nimSum ^= heapSizes[i];
+                    }
+                    return nimSum;
+                }
+
+
+
 
                 function generateChildren(node) {
                     let children = [];
                     for (const row in node) {
                         if (node[row] > 0) {
                             for (let i = 1; i <= node[row]; i++) {
-                                const childNode = { ...node };
+                                const childNode = { ...node };  // Correctly clone the node
                                 childNode[row] -= i;
                                 children.push(childNode);
                             }
@@ -744,14 +770,12 @@
                     }
                     return children;
                 }
+
         
             }
 
-            makeMove();
-
-            
+            makeMove();   
         }   
-
 
 
         function makeMove() {
