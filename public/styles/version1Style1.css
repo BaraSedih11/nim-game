@@ -1,0 +1,189 @@
+body {
+    font-family: 'YourNewFont', sans-serif; /* Change 'YourNewFont' to the desired font-family */
+    background-color: #f0f0f0;
+    text-align: center;
+}
+
+h1 {
+    color: #007BFF; /* Blue color for the game title */
+    margin-top: 20px;
+    font-size: 28px; /* Increase the font size for the title */
+}
+
+#game-info h2 {
+    font-size: 24px; 
+    font-weight: bold; 
+    font-family: 'YourNewFont', sans-serif; 
+    text-align: left; 
+    padding-left: 10px;
+}
+
+
+#game-info {
+    background-color: #fff;
+    padding: 10px;
+    border: 2px solid #007BFF; /* Blue border color */
+    margin: 10px;
+    border-radius: 10px;
+    justify-content: space-between; /* Elements appear in a row */
+}
+#game-info-row {
+    display: flex;
+    background-color: #fff;
+    padding: 10px;
+    margin: 10px;
+    justify-content: space-between; /* Elements appear in a row */
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+#game-info p {
+    font-size: 20px; /* Increase text size */
+    font-weight: bold; /* Apply bold font */
+    font-family: 'YourNewFont', sans-serif; /* Add the desired font-family */
+}
+
+
+#sticks-box {
+    background-color: #6a7a77; /* Lively orange background color for sticks box */
+    padding: 20px;
+    margin: 10px;
+    margin-top: 20px;
+    border: 1px solid #007BFF; /* Blue border color */
+    border-radius: 5px;
+    justify-content: center;
+}
+
+#controls {
+    margin-top: 20px;
+}
+
+label {
+    color: #007BFF; /* Blue color for labels */
+    font-size: 18px; /* Increase the font size for labels */
+    font-family: 'YourNewFont', sans-serif; /* Add the desired font-family */
+}
+
+input, select {
+    padding: 15px; /* Increase padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border in width */
+    font-size: 18px; /* Increase the font size */
+    background-color: #555; /* Dark background for input/select elements */
+    color: #fff; /* Light text color for input/select elements */
+}
+
+button {
+    background-color: #007BFF; /* Blue background for buttons */
+    color: #fff;
+    padding: 15px 30px; /* Increase padding for the button */
+    border: none;
+    border-radius: 5px;
+    margin: 10px 5px; /* Adjust margin for the buttons */
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 18px; /* Increase the font size for the button text */
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+button:active {
+    background-color: #003966; /* Even darker blue when pressed */
+}
+
+#result {
+    font-weight: bold;
+    color: #0d324f; /* Red color for the result text */
+}
+
+#last-move {
+    font-style: italic;
+}
+
+/* Style for the individual sticks */
+.stick {
+    width: 100px; /* Adjust the width as needed */
+    height: auto; /* Maintain the aspect ratio */
+    margin-right: 5px; /* Add some spacing between sticks */
+}
+
+#game-shows {
+    background-color: #f0f0f0; /* Background color */
+    border: 2px solid #007BFF; /* Border color */
+    border-radius: 10px;
+    padding: 10px;
+    margin: 10px;
+    text-align: center;
+    display: flex;
+    justify-content: space-between; /* Elements appear in a row */
+    padding-left: 50px;
+    padding-right: 500px;
+}
+
+#last-move, #result {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333; /* Text color */
+    font-family: 'YourNewFont', sans-serif; /* Font family */
+    margin: 10px;
+}
+
+.selected {
+    transition: transform 0.2s, border 0.2s, box-shadow 0.2s; /* Add transition for smooth effect */
+    cursor: pointer; /* Change the cursor to a pointer */
+}
+
+/* Style for the button container */
+#sticks-box {
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
+
+/* Style for the button */
+.stick-button {
+    background: none; /* Set the background to transparent or none */
+    border: none; /* Remove any border */
+    padding: 0; /* Remove padding */
+    cursor: pointer;
+    z-index: 1;
+}
+
+/* Style for the image inside the button */
+.stick-button img {
+    width: 100px; /* Set the width of the image */
+    height: auto; /* Maintain the aspect ratio */
+    transition: transform 0.2s; /* Add a transition for a smooth effect on hover */
+}
+
+/* Hover effect for the image */
+.stick-button:hover img {
+    transform: scale(1.1); /* Scale the image slightly on hover */
+}
+
+.stick-button:hover {
+    background-color: #354a35; /* Green on hover */
+    color: #fff; /* Change text color to white */
+}
+
+/* Style for the stick button when clicked */
+.stick-button:active {
+    background-color: #202d20; /* Darker green when clicked */
+    color: #fff; /* Change text color to white */
+}
+
+/* Style for the selected button */
+.stick-button.selected {
+    background-color: #202d20; /* Darker green like active state */
+    color: #fff; /* Change text color to white */
+    z-index: 1;
+}
+
+.removed {
+    display: none;
+    z-index: 0;
+}

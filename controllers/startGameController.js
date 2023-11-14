@@ -1,11 +1,11 @@
 const path = require('path');
 
 exports.loginPage = (req, res) => {
-    res.render(path.join(__dirname, '..', '/public', '/login.ejs'))
+    res.render(path.join(__dirname, '..', '/public/views', '/login.ejs'))
 }
 
 exports.version1Page = (req, res) => {
-    res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+    res.render(path.join(__dirname, '..', '/public', '/views', '/version1.ejs'),
     {
         username: req.session.username,
         gameType: req.session.gameType,
@@ -14,7 +14,7 @@ exports.version1Page = (req, res) => {
     });
 }
 exports.version2Page = (req, res) => {
-    res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'),
+    res.render(path.join(__dirname, '..', '/public', '/views', '/version2.ejs'),
     {
         username: req.session.username,
         gameType: req.session.gameType,
@@ -33,7 +33,7 @@ exports.startGame = (req, res) => {
     if(req.session && req.session.username){
         let apiURL = '';
         if(gameType === 'NIM1'){
-            res.render(path.join(__dirname, '..', '/public', '/version1Page', '/version1.ejs'),
+            res.render(path.join(__dirname, '..', '/public', '/views', '/version1.ejs'),
             {
                 username: req.session.username,
                 gameType: req.session.gameType,
@@ -41,7 +41,7 @@ exports.startGame = (req, res) => {
                 level: req.session.level,
             });
         } else if (gameType === 'NIM2'){
-            res.render(path.join(__dirname, '..', '/public', '/version2Page', '/version2.ejs'),
+            res.render(path.join(__dirname, '..', '/public', '/views', '/version2.ejs'),
             {
                 username: req.session.username,
                 gameType: req.session.gameType,

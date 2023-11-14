@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="/styles/version2Style.css">
+
+    <script type="text/javascript">
+        let player1, player2;
+
+        const sticksNumber = <%= sticks %>;
+
+    </script>
+</head>
+<body>
+    <h1>Nim Game</h1>
+    <div id="game-info">
+        <h2>Game Information:</h2>
+        <div id="game-info-row">
+            <p><strong>Number of sticks:</strong> <span id="gameInfo"><%= sticks %></span></p>
+            <p><strong>Level:</strong> <span id="level"><%= level %></span></p>
+            <p><strong>Player 1:</strong> <span id="username"><%= username %></span></p>
+            <p><strong>Player 2:</strong> <span id="pc">PC</span></p>
+            <p><strong>Game type:</strong> <span id="gameType"><%= gameType %></span></p>
+        </div>
+    </div>
+    
+
+    <div id="game-container">
+        <div id="sticks-rows">
+            <div id="sticks-row-0" class="sticks-row">
+                <div id="sticks-box-0" class="sticks-box">
+                    <!-- Sticks will be dynamically added using JavaScript -->
+                </div>
+            </div>
+        </div>
+        <div id="controls">
+            <button id="start-game" onclick="startGame()">Start Game</button>
+            <button id="reset-game" onclick="resetGame()">Reset</button>
+            <button id="make-move" onclick="makeMove()">Make Move</button>
+            <button id="exit-game" onclick="exitGame()">Exit</button>
+        </div>
+    </div>
+
+    <div id="game-shows">
+        <p id="last-move"><strong>Last move:</strong></p>
+        <p id="result"><strong><%= username %> : 0 vs PC : 0</strong></p>
+    </div>
+    <script type="text/javascript">
+        function generateSticks() {
+            const sticksBox = document.getElementById('sticks-box-0');
+            const sticksRows = document.getElementById('sticks-rows');
+            const stickImageSrc = '../images/stick.png';
+
+            for (let i = 0; i < sticksNumber; i++) {
+                const button = document.createElement('button');
+                button.className = 'stick-button arr-0'; // Combine classes directly
+
+                const stick = document.createElement('img');
+                stick.src = stickImageSrc;
+                stick.alt = 'Stick Image';
+
+                button.appendChild(stick);
+                sticksBox.appendChild(button);
+            }
+
+            const lineBreak = document.createElement('br');
+            sticksBox.appendChild(lineBreak);
+            sticksRows.appendChild(sticksBox);
+
+            addClickEventListeners(); // Add click event listeners
+            addInputElements(); // Add input elements if needed
+        }
+
+        function addClickEventListeners() {
+            const stickButtons = document.querySelectorAll('.stick-button');
+
+            stickButtons.forEach((stickButton, index) => {
+                stickButton.id = `stick-${index + 1}`;
+            });
+        }
+
+        function addInputElements() {
+            const sticksRows = document.getElementById('sticks-rows');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'sticks-input';
+            input.placeholder = 'Enter sticks';
+
+            const sticksBox = document.getElementById('sticks-box-0');
+            const rowDiv = document.createElement('div');
+            rowDiv.appendChild(input);
+
+            sticksRows.appendChild(rowDiv);
+            sticksBox.appendChild(rowDiv);
+        }
+
+        window.onload = function () {
+            generateSticks();
+        };
+
+
+        // handling the buttons -------------------------------------------------------------------
+
+        function startGame() {
+            console.log("start game");
+
+            const randomValue = Math.random();
+            let startingPlayer;
+            if (randomValue < 0.5) {
+                startingPlayer = 1;
+            } else {
+                startingPlayer = 2;
+            }
+            let isPlayer1Turn = false;
+            let isPlayer2Turn = false;
+            
+            let currentRowClass = null; 
+
+            if (startingPlayer === 1) {
+                isPlayer1Turn = true;
+                console.log("Player one turn");
+                player1Move();
+            } else if (startingPlayer === 2) {
+                isPlayer2Turn = true;
+                console.log("Player two turn");
+                player2Move();
+            }
+        }
+
+        function player2Move() {
+            isPlayer1Turn = true;
+            isPlayer2Turn = false;
+            currentArrClass = null;
+
+            // Now the algorithm starts
+
+            const levelElement = document.getElementById('level');
+            const levelValue = levelElement.textContent;
+
+            if (levelValue === "Easy") {
+                const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
+                const availableArrs = [];
+
+                stickButtons.forEach(stickButton => {
+                    if (!stickButton.classList.contains('removed')) {
+                        currentArrClass = stickButton.classList[1];
+                        availableArrs.push(currentArrClass);
+                    }
+                });
+
+                const filteredAvailableArrs = [...new Set(availableArrs)].filter(arrClass => {
+                    const sticksInArr = document.querySelectorAll(`.stick-button.${arrClass}:not(.removed)`);
+                    return sticksInArr.length > 2;
+                });
+
+                if (filteredAvailableArrs.length > 0) {
+                    const selectedArrKey = filteredAvailableArrs[Math.floor(Math.random() * filteredAvailableArrs.length)];
+                    const selectedArr = document.querySelectorAll(`.stick-button.${selectedArrKey}:not(.removed)`);
+
+                    if (selectedArr.length > 2) {
+                        const numberOfSticksToPick = Math.max(1, Math.min(Math.floor(Math.random() * (selectedArr.length - 1)) + 1, selectedArr.length));
+
+                        const selectedSticks = Array.from(selectedArr).sort(() => Math.random() - 0.5).slice(0, numberOfSticksToPick);
+                        selectedSticks.forEach(stick => stick.classList.add('selected'));
+
+                        if (document.querySelectorAll(`.stick-button.${selectedArrKey}:not(.removed)`).length > 0) {
+                            makeMove();
+                            return;
+                        }
+                    }
+                }
+            }
+            
+
+            else if (levelValue === 'Medium') {
+                console.log("You are medium");
+            } else if (levelValue === 'Hard') {
+                console.log("You are hard");
+            }
+
+            makeMove();
+        }
+
+
+        function makeMove() {
+            // Get the current arr class 
+            const selectedSticksInCurrentArr = document.querySelectorAll(`.stick-button.${currentArrClass}.selected`);
+
+            // Read the number of sticks from the input
+            const input = document.getElementById(`input-0`);
+            const numberOfSticksToSelect = input.value || 0;
+
+            if (numberOfSticksToSelect > 0 && numberOfSticksToSelect <= selectedSticksInCurrentArr.length) {
+                // Give each new arr class a different background color:
+                let newArr = null;
+                let i = 1;
+                while (!(newArr = document.querySelectorAll(`.stick-button.arr-${i}`))) i++;
+
+                // Use a predefined set of background colors
+                const backgroundColors = ['#FF5733', '#33FF57', '#5733FF', '#FFFF33', '#33FFFF', '#FF33FF', '#FF5733', '#33FF57', '#5733FF', '#FFFF33'];
+
+                // Use a random color if there are no predefined colors left
+                const backgroundColor = backgroundColors[i - 1] || getRandomColor();
+
+                // Create a new div to represent the arr and its associated input field
+                const arrDiv = document.createElement('div');
+                arrDiv.classList.add('arr-container');
+
+                // Iterate over the selected sticks and create elements for each
+                selectedSticksInCurrentArr.forEach((selectedStick, index) => {
+                    const stickDiv = document.createElement('div');
+                    stickDiv.classList.add(`stick-button`, `arr-${i}`);
+                    stickDiv.style.backgroundColor = backgroundColor;
+                    arrDiv.appendChild(stickDiv);
+                });
+
+                // Create an input field for the arr
+                const inputField = document.createElement('input');
+                inputField.type = 'number';
+                inputField.value = selectedSticksInCurrentArr.length; // Set the default value to the number of selected sticks
+                inputField.readOnly = true; // Make the input field read-only
+
+                // Append the arr and input field to the existing .stick-box container
+                const stickBoxContainer = document.querySelector('.sticks-box');
+                stickBoxContainer.appendChild(arrDiv);
+                stickBoxContainer.appendChild(inputField);
+
+                // Continue with the rest of the logic, e.g., update scores, check for game over, etc.
+                // ...
+
+            } else {
+                // Display an alert or handle the case where the selected number is invalid
+                alert('Invalid number of sticks selected');
+            }
+        }
+
+
+        function getNewArrClass() {
+            let i = 1;
+            while (document.querySelector(`.stick-button.arr-${i}`)) {
+                i++;
+            }
+            return `arr-${i}`;
+        }
+
+        function checkGameOver() {
+            const totalSticks = document.querySelectorAll(`.stick-button`);
+            for (let j = 0; j < totalSticks.length; j++) {
+                let totalInSameArr = 0;
+                const currentArr = `arr-${j}`;
+                totalSticks.forEach(button => {
+                    if (button.classList.contains(currentArr)) {
+                        totalInSameArr++;
+                    }
+                });
+                if (totalInSameArr > 2) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function getRandomColor() {
+            // Function to generate a random hex color
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+
+
+
+        function updateScores(score1, score2) {
+            const resultValue = document.getElementById('result');
+            resultValue.innerHTML = `Player1 : ${score1} vs PC : ${score2}`;
+        }
+
+        function resetGame(score1, score2) {
+            console.log('Reset Game');
+
+            // Clear existing sticks
+            const sticksBox = document.getElementById('sticks-box');
+            sticksBox.innerHTML = '';
+            // Generate new sticks
+            generateSticks();
+
+            // display the result
+            updateScores(score1, score2);
+        }
+
+        
+       
+        function exitGame() {
+            fetch('/game/logout', {
+                method: 'GET', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/game'; 
+                } else {
+                    console.error('Logout request failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+
+    </script>
+</body>
+</html>
