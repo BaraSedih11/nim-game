@@ -44,8 +44,8 @@ h1 {
 }
 
 
-#sticks-box-0 {
-    background-color: #6a7a77; /* Lively orange background color for sticks box */
+#sticks-box {
+    background-color: #6a7a77; 
     padding: 20px;
     margin: 10px;
     margin-top: 20px;
@@ -137,21 +137,12 @@ button:active {
 }
 
 /* Style for the button container */
-#sticks-box-0 {
+#sticks-box {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     margin: 10px;
-    display: flex;
-}
-#sticks-row-0 {
-    display: flex; 
-    align-items: center;
-}
-
-#sticks-rows {
-    flex-direction: column;
-    align-items: flex-start;
+    justify-content: space-between;
 
 }
 /* Style for the button */
@@ -170,7 +161,6 @@ button:active {
     transition: transform 0.2s; /* Add a transition for a smooth effect on hover */
 }
 
-/* Hover effect for the image */
 .stick-button:hover img {
     transform: scale(1.1); /* Scale the image slightly on hover */
 }
@@ -180,13 +170,11 @@ button:active {
     color: #fff; /* Change text color to white */
 }
 
-/* Style for the stick button when clicked */
 .stick-button:active {
     background-color: #202d20; /* Darker green when clicked */
     color: #fff; /* Change text color to white */
 }
 
-/* Style for the selected button */
 .stick-button.selected {
     background-color: #202d20; /* Darker green like active state */
     color: #fff; /* Change text color to white */
@@ -203,21 +191,15 @@ button:active {
     flex-direction: row;
     margin-bottom: 10px; /* Adjust the margin as needed */
 }
-.sticks-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-input, .sticks-box {
+
+.sticks-box {
     font-family: monospace;
 }
-#sticks-box {
-    user-select: none;
-}#sticks-row-0 {
-    display: flex; /* Use flexbox to arrange items in a row */
-}
 
-
-input {
-    margin-left: 10px; /* Add some margin to separate the sticks box and the input */
+.game-rules {
+    font-family: 'Arial', sans-serif; /* Replace 'Arial' with your preferred font */
+    font-size: 24px; /* Adjust the font size as needed */
+    color: #000000; /* Set the text color */
+    margin-top: 10px; /* Adjust the top margin as needed */
+    font-weight: bold;
 }
