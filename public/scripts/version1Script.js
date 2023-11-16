@@ -97,7 +97,6 @@ function player1Move(event){
     isPlayer1Turn = false;
     isPlayer2Turn = true;
     console.log('Clicked');
-    console.log(currentRowClass);
     if (!stickButton.classList.contains('selected')) {  
         if (prevSelectedButton) {
             if (isButtonInSameRowAsPreviouslySelected(stickButton)) {
@@ -106,7 +105,7 @@ function player1Move(event){
                 prevSelectedButton = stickButton; 
                 currentRowClass = stickButton.classList[1];
             } else {
-                console.log('Different row, preventing selection.');
+                alert('Different row, preventing selection.');
             }
         } else {
             // If no previously selected button, allow the selection
@@ -195,9 +194,7 @@ function player2Move() {
         }
         
     } 
-    else if (levelValue === 'Medium') {
-        console.log('Medium');
-        
+    else if (levelValue === 'Medium') {        
         const availableRows = [];
         const nimSum = calculateNimSum();
 
@@ -278,67 +275,60 @@ function player2Move() {
         // functions
         function createGameNode() {
             const gameState = {};
-
+    
             const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
-
+    
             stickButtons.forEach((stickButton, index) => {
                 const rowClass = stickButton.classList[1];
-                if (!gameState[rowClass]) {
-                    gameState[rowClass] = 1;
-                } else {
-                    gameState[rowClass]++;
-                }
+                gameState[rowClass] = gameState[rowClass] ? gameState[rowClass] + 1 : 1;
             });
+    
             return gameState;
         }
-
+ 
         function calculateBestMove() {
-            const depth = 10; // Adjust the depth as needed
+            const depth = 10; 
             const alpha = -Infinity;
             const beta = Infinity;
             const maximizingPlayer = isPlayer1Turn;
-
+        
             const availableMoves = getAvailableMoves();
             console.log('AvailableMoves: ' + JSON.stringify(availableMoves));
-
+        
             let bestValue = -Infinity;
             let bestMove = null;
-
+        
             for (const move of availableMoves) {
-                // Evaluate the move using alpha-beta pruning
                 if (isValidMove(move)) {
                     applyMove(move, currentState);
-
-                    const value = alphabeta(currentState, depth, alpha, beta, !maximizingPlayer);
+                    const value = alphabeta(currentState, depth, alpha, beta, maximizingPlayer);
                     undoMove(move, currentState);
-
+        
                     console.log('Move:', move, 'Value:', value);
-
+        
                     // If the move is valid, update the best move
                     if (value > bestValue) {
                         bestValue = value;
                         bestMove = move;
+                        
                     }
                 }
             }
-
+        
             // If no valid move is found, generate a new move
             if (!bestMove) {
                 bestMove = getRandomMove();
+                console.log('random');
             }
-
+        
             // Update the game state with the best move
             applyMove(bestMove, currentState);
             markSelectedSticks(bestMove);
-
+        
             currentRowClass = bestMove.row;
             return bestMove;
         }
 
-
-
-
-        // Function to get available moves
         function getAvailableMoves() {
             const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
             const rows = new Set();
@@ -357,15 +347,12 @@ function player2Move() {
 
             return moves;
         }
-        
-        // Function to check if a move is valid
+
         function isValidMove(move) {
             const sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
-            return sticks_in_row.length >= move.sticks;
+            return (sticks_in_row.length >= move.sticks);
         }
 
-
-        // Function to generate a random move
         function getRandomMove() {
             console.log('Random move');
             const rows = document.querySelectorAll('.stick-button:not(.removed)');
@@ -376,27 +363,27 @@ function player2Move() {
         }
 
         function applyMove(move, state) {
-            // Getting all the available stick-buttons that aren't marked as removed in current selected row
-            let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
-            
-            // Picking the amount of sticks specified in 'move' from the beginning of the row
-            for(let i = 0; i < move.sticks; i++){
+            const sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
+            const totalSticks = sticks_in_row.length;
+        
+            for (let i = 0; i < move.sticks; i++) {
                 sticks_in_row[i].classList.add('removed');
             }
             state[move.row] -= move.sticks;
         }
 
         function undoMove(move, state) {
-            // Getting all the stick-buttons marked as removed in current selected row
-            let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}.removed`);
-            
-            // Returning back the amount of sticks specified in 'move' from the end of the row
-            for(let i = 0; i < move.sticks; i++){
-                sticks_in_row[sticks_in_row.length-1-i].classList.remove('removed');
+            const sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}.removed`);
+        
+            for (let i = 0; i < move.sticks; i++) {
+                if (sticks_in_row.length > i) {
+                    sticks_in_row[sticks_in_row.length - 1 - i].classList.remove('removed');
+                }
             }
+        
             state[move.row] += move.sticks;
         }
-
+        
         function markSelectedSticks(move) {
             let sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
             
@@ -438,55 +425,49 @@ function player2Move() {
             }
         }
 
-        // Helper functions
         function isTerminalNode(node) {
             const keys = Object.keys(node);
-            let num = 0;
-
-            for (let i = 1; i <= keys.length; i++) {
-                num += node[`row-${i}`] || 0;  // Handle cases where a row might be undefined
+            let totalSticks = 0;
+    
+            for (const key of keys) {
+                totalSticks += node[key];
             }
-            return num === 0;
+            return totalSticks === 0;
         }
 
 
         function evaluateNode(node) {
             const keys = Object.keys(node);
-
-            // Check if there's only one row left
+        
             if (keys.length === 1) {
                 const rowKey = keys[0];
                 const sticksInRow = node[rowKey];
-
-                // If there's only one stick left in that row, return a large positive value
+        
                 if (sticksInRow === 1) {
                     return 1000; // Adjust the value as needed
                 }
+        
+                // Ensure the PC leaves one stick when there's only one row left
+                return 1;
             }
-
+        
+            // Check if the opponent has only one stick left in any row
+            for (const key of keys) {
+                if (node[key] === 1) {
+                    return 800; // Adjust the value as needed
+                }
+            }
+        
             // Add more conditions to handle other winning scenarios
             let nimSum = calculateNimSum(Object.values(node));
-
-            // Example: If there's a row with an odd number of sticks, return a positive value
-            if (keys.length === 2 && (node[keys[0]] === 1 || node[keys[1]] === 1)) {
-                return 800; // Adjust the value as needed
-            }
-
-            // Example: If there's a row with a specific number of sticks, return a positive value
+        
             if (keys.length === 2 && node[keys[0]] === node[keys[1]]) {
                 return 700; // Adjust the value as needed
             }
-
-            // Default case: Return the Nim-Sum
+        
             return nimSum;
         }
-
-
-
-
-
-
-
+        
         // Helper function to calculate the nimSum of an array of heap sizes
         function calculateNimSum(heapSizes) {
             let nimSum = 0;
@@ -495,9 +476,6 @@ function player2Move() {
             }
             return nimSum;
         }
-
-
-
 
         function generateChildren(node) {
             let children = [];
@@ -520,32 +498,11 @@ function player2Move() {
 }   
 
 function makeMove() {
-    console.log(currentRowClass);
-    // Get the current row class
     const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);
-    console.log(selectedSticksInCurrentRow.length);
 
-    let selectedNumber = selectedSticksInCurrentRow.length;
-    console.log(selectedNumber);
+    updateLastMoves({ row: currentRowClass, sticks: selectedSticksInCurrentRow.length });
 
-    let totalUnRemoved = 0;
-    const totalSticks = document.querySelectorAll(`.stick-button`);
-    totalSticks.forEach(button => {
-        if(!button.classList.contains('removed')){
-            totalUnRemoved++;
-        }
-    });
-    console.log(totalUnRemoved);
-
-    updateLastMoves({ row: currentRowClass, sticks: selectedNumber });
-
-    totalUnRemoved -= selectedNumber;
-    if( !totalUnRemoved ){
-        totalUnRemoved++;
-        selectedNumber--;
-    }
-
-    if (selectedNumber) {     
+    if (selectedSticksInCurrentRow.length > 0) {
         selectedSticksInCurrentRow.forEach(button => {
             button.classList.remove('selected');
             button.classList.add('removed');
@@ -554,12 +511,8 @@ function makeMove() {
         });
     }
 
-    currentRowClass = null;
-    prevSelectedButton = null;
-
-    
-    if(totalUnRemoved == 1){
-        //game finished
+    const sticksStill = document.querySelectorAll('.stick-button:not(.removed)');
+    if(sticksStill.length === 1){
         if (isPlayer2Turn) {
             alert('Game Over! Player 1 wins!');
             player1Score++;
@@ -567,20 +520,21 @@ function makeMove() {
             alert('Game Over! Player 2 wins!');
             player2Score++;
         }
-            resetGame(player1Score, player2Score);
-    } else {
-        // Reset global variables
-
-        // Check whose row is selected (player 1's or player 2's turn)
-        if (isPlayer1Turn) {
-            console.log('player1 now');
-        } else {
-            console.log('player2 now');
-            player2Move();
-        }
+        resetGame(player1Score, player2Score);
     }
-     
+
+    currentRowClass = null;
+    prevSelectedButton = null;
+
+    // Check whose row is selected (player 1's or player 2's turn)
+    if (isPlayer1Turn) {
+        console.log('player1 now');
+    } else {
+        console.log('player2 now');
+        player2Move();
+    }
 }
+
 
 function updateLastMoves(move) {
     const lastMoveLabel = document.getElementById('last-move');
@@ -597,11 +551,8 @@ function updateLastMoves(move) {
     lastTwoMoves.push(move);
 
     const movesString = JSON.stringify(move);
-    lastMoveLabel.innerHTML = `<strong>Last moves:</strong> ${movesString}`;
+    lastMoveLabel.innerHTML = `<strong>Last moves:</strong> ${move.row} : ${move.sticks}`;
 }
-
-
-
 
 function updateScores(score1, score2) {
     const resultValue = document.getElementById('result');
