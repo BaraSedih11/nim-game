@@ -192,7 +192,7 @@ function player2Move() {
                 });
             }
         }
-        
+        makeMove();
     } 
     else if (levelValue === 'Medium') {        
         const availableRows = [];
@@ -250,6 +250,7 @@ function player2Move() {
             selectedRow[randomIndex].classList.add('selected');
         }
         
+        makeMove();
         
         function calculateNimSum() {
             let nimSum = 0;
@@ -270,7 +271,14 @@ function player2Move() {
         console.log('Initial State:', currentState);
         let bestMove = calculateBestMove();
         console.log('Best Move:', bestMove);
+        currentRowClass = bestMove.row;
         console.log('Final State:', currentState);
+        markSelectedSticks(bestMove);
+
+        const totalSticks = document.querySelectorAll(`.stick-button.${currentRowClass}:not(.removed).selected`);
+        console.log('Totally sticks : ', totalSticks);
+
+        makeMove();
 
         // functions
         function createGameNode() {
@@ -287,7 +295,7 @@ function player2Move() {
         }
  
         function calculateBestMove() {
-            const depth = 10; 
+            const depth = 10; // Adjust the depth as needed
             const alpha = -Infinity;
             const beta = Infinity;
             const maximizingPlayer = isPlayer1Turn;
@@ -299,35 +307,29 @@ function player2Move() {
             let bestMove = null;
         
             for (const move of availableMoves) {
-                if (isValidMove(move)) {
-                    applyMove(move, currentState);
-                    const value = alphabeta(currentState, depth, alpha, beta, maximizingPlayer);
-                    undoMove(move, currentState);
-        
-                    console.log('Move:', move, 'Value:', value);
-        
-                    // If the move is valid, update the best move
-                    if (value > bestValue) {
-                        bestValue = value;
-                        bestMove = move;
-                        
-                    }
+                applyMove(move, currentState);
+                const value = alphabeta(currentState, depth, alpha, beta, maximizingPlayer);
+                undoMove(move, currentState);
+
+                console.log('Move:', move, 'Value:', value);
+
+                // If the move is valid, update the best move
+                if (value > bestValue) {
+                    bestValue = value;
+                    bestMove = move;
                 }
             }
         
             // If no valid move is found, generate a new move
             if (!bestMove) {
                 bestMove = getRandomMove();
-                console.log('random');
+                console.log('random,');
             }
-        
-            // Update the game state with the best move
-            applyMove(bestMove, currentState);
-            markSelectedSticks(bestMove);
-        
-            currentRowClass = bestMove.row;
+            console.log('BestMoveeee: ', bestMove);
+
             return bestMove;
         }
+           
 
         function getAvailableMoves() {
             const stickButtons = document.querySelectorAll('.stick-button:not(.removed)');
@@ -354,7 +356,6 @@ function player2Move() {
         }
 
         function getRandomMove() {
-            console.log('Random move');
             const rows = document.querySelectorAll('.stick-button:not(.removed)');
             const randomRow = rows[Math.floor(Math.random() * rows.length)].classList[1];
             const sticks_in_row = document.querySelectorAll(`.stick-button.${randomRow}:not(.removed)`);
@@ -364,7 +365,6 @@ function player2Move() {
 
         function applyMove(move, state) {
             const sticks_in_row = document.querySelectorAll(`.stick-button.${move.row}:not(.removed)`);
-            const totalSticks = sticks_in_row.length;
         
             for (let i = 0; i < move.sticks; i++) {
                 sticks_in_row[i].classList.add('removed');
@@ -420,7 +420,6 @@ function player2Move() {
                         break;
                     }
                 }
-                
                 return value;
             }
         }
@@ -432,39 +431,27 @@ function player2Move() {
             for (const key of keys) {
                 totalSticks += node[key];
             }
-            return totalSticks === 0;
+            return totalSticks === 1;
         }
+            // let notEmptyRows = 0;
+            // let row1 = 0;
+            // let row2 = 0;
 
+            // for(let i = 0 ; i < values.length; i++){
+            //     if(values[i] !== undefined && values[i] !== 0) notEmptyRows++;
+            //     if(notEmptyRows === 1) row1 = i;
+            //     if(notEmptyRows === 2) row2 = i;
+            // }
+
+            // if (notEmptyRows === 2 && ( values[row1] === 1 || values[row2] === 1)){
+            //     return 1000;
+            // }
 
         function evaluateNode(node) {
-            const keys = Object.keys(node);
-        
-            if (keys.length === 1) {
-                const rowKey = keys[0];
-                const sticksInRow = node[rowKey];
-        
-                if (sticksInRow === 1) {
-                    return 1000; // Adjust the value as needed
-                }
-        
-                // Ensure the PC leaves one stick when there's only one row left
-                return 1;
-            }
-        
-            // Check if the opponent has only one stick left in any row
-            for (const key of keys) {
-                if (node[key] === 1) {
-                    return 800; // Adjust the value as needed
-                }
-            }
-        
-            // Add more conditions to handle other winning scenarios
-            let nimSum = calculateNimSum(Object.values(node));
-        
-            if (keys.length === 2 && node[keys[0]] === node[keys[1]]) {
-                return 700; // Adjust the value as needed
-            }
-        
+            const values = Object.values(node);
+
+            // Calculate nim sum
+            let nimSum = calculateNimSum(values);
             return nimSum;
         }
         
@@ -493,48 +480,63 @@ function player2Move() {
 
 
     }
-
-    makeMove();   
 }   
 
+function delay(m){
+    for (let d = 0 ; d < m ; d++){
+        console.log("Delay");
+    }
+}
+
 function makeMove() {
-    const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);
+    console.log(currentRowClass);
+    const selectedSticksInCurrentRow = document.querySelectorAll(`.stick-button.${currentRowClass}.selected`);    
+    console.log(selectedSticksInCurrentRow);
+    if (selectedSticksInCurrentRow.length > 0) {     
+        if(!isPlayer2Turn)delay(1000);
 
-    updateLastMoves({ row: currentRowClass, sticks: selectedSticksInCurrentRow.length });
+        updateLastMoves({ row: currentRowClass, sticks: selectedSticksInCurrentRow.length });
 
-    if (selectedSticksInCurrentRow.length > 0) {
         selectedSticksInCurrentRow.forEach(button => {
             button.classList.remove('selected');
             button.classList.add('removed');
             button.disabled = true;
             button.style.display = 'none';
+            console.log('remove');
         });
-    }
 
-    const sticksStill = document.querySelectorAll('.stick-button:not(.removed)');
-    if(sticksStill.length === 1){
-        if (isPlayer2Turn) {
-            alert('Game Over! Player 1 wins!');
-            player1Score++;
-        } else {
-            alert('Game Over! Player 2 wins!');
-            player2Score++;
+
+        currentRowClass = null;
+        prevSelectedButton = null;
+
+        // Check if there is only one stick left in a row
+        const remainingRows = document.querySelectorAll(`.stick-button:not(.removed)`);
+        console.log(remainingRows);
+        if (remainingRows.length === 1) {
+            // Game finished
+            if (isPlayer2Turn) {
+                alert('Game Over! Player 1 wins!');
+                player1Score++;
+            } else {
+                alert('Game Over! Player 2 wins!');
+                player2Score++;
+            }
+            resetGame(player1Score, player2Score);
+            return;
         }
-        resetGame(player1Score, player2Score);
-    }
 
-    currentRowClass = null;
-    prevSelectedButton = null;
-
-    // Check whose row is selected (player 1's or player 2's turn)
-    if (isPlayer1Turn) {
-        console.log('player1 now');
+        // Check whose row is selected (player 1's or player 2's turn)
+        if (isPlayer1Turn) {
+            console.log('player1 now');
+        } else {
+            console.log('player2 now');
+            player2Move();
+        }
     } else {
-        console.log('player2 now');
-        player2Move();
+        // No sticks selected, show an alert or handle as needed
+        alert('Invalid move. Please select at least one stick.');
     }
 }
-
 
 function updateLastMoves(move) {
     const lastMoveLabel = document.getElementById('last-move');
@@ -568,6 +570,10 @@ function resetGame(score1, score2) {
 
     updateScores(score1, score2);
     updateLastMoves(null);
+
+    isPlayer1Turn = false;
+    isPlayer2Turn = false;
+    return;
 }
 
 function exitGame() {

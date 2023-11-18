@@ -3,122 +3,79 @@
 <head>
     <title>NIM Game</title>
     <link rel="stylesheet" href="/styles/loginStyle.css">
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-            // Event listener for the game type select box
-            document.getElementById("gameType").addEventListener("change", updateSticksOptions);
-
-            // Initial call to set up the sticks options based on the initial game type
-            updateSticksOptions();
-        });
-
-        function startGame() {
-            console.log("Clicked succesfully");
-            const gameType = document.getElementById("gameType").value;
-            const username = document.getElementById("username").value;
-            const numberOfSticks = document.getElementById("sticks").value;
-            const levelNumber = document.getElementById("level").value;
-
-            let apiURL = '';
-            let sticks = 0;
-            let level = levelNumber;
-
-            if (gameType === 'NIM1') {
-                apiURL = '/game/version1';
-                if (numberOfSticks === 'mode4') {
-                    sticks = 4;
-                } else if (numberOfSticks === 'mode9') {
-                    sticks = 9;
-                } else if (numberOfSticks === 'mode16') {
-                    sticks = 16;
-                }
-            } else if (gameType === 'NIM2') {
-                apiURL = '/game/version2';
-                // Parse the selected number of sticks as an integer
-                sticks = parseInt(numberOfSticks.replace("mode", ""), 10);
-            }
-
-            // Make a GET request to the server's API
-            fetch('/game/startGame', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, gameType, sticks, level }),
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.href = apiURL; 
-                } else {
-                    console.error('Authentication failed');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-
-        // Event listener for the game type select box
-        document.getElementById("gameType").addEventListener("change", updateSticksOptions);
-
-        // Function to update the options in the "sticks" select box based on the selected game type
-        function updateSticksOptions() {
-            const gameType = document.getElementById("gameType").value;
-            const sticksSelect = document.getElementById("sticks");
-
-            // Clear existing options
-            sticksSelect.innerHTML = "";
-
-            // Add new options based on the selected game type
-            if (gameType === 'NIM1') {
-                addOption(sticksSelect, "4");
-                addOption(sticksSelect, "9");
-                addOption(sticksSelect, "16", true);
-            } else if (gameType === 'NIM2') {
-                for (let i = 4; i <= 16; i++) {
-                    addOption(sticksSelect, i.toString());
-                }
-            }
-        }
-
-        // Helper function to add an option to the select box
-        function addOption(selectBox, value, selected = false) {
-            const option = document.createElement("option");
-            option.value = "mode" + value;
-            option.text = value;
-            option.selected = selected;
-            selectBox.add(option);
-        }
-    </script>
+    <script type="text/javascript" src="/scripts/loginScript.js"></script>
 </head>
 <body>
-    <div id="loginContainer">
-        <h1>Welcome to NIM Game</h1>
-        <form id="loginForm">
-            <label for="username">Enter your name:</label>
-            <input type="text" id="username" required>
-            <label for="gameType">Select a game:</label>
-            <select id="gameType">
-                <option value="NIM1" selected>Pick up sticks from rows</option>
-                <option value="NIM2">Divide packets of sticks</option>
-            </select>
-            <br>
-            <label for="level">select the level:</label>
-            <select id="level">
-                <option value="Easy" selected>Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-            </select>
-            <br>
-            <label>Select number of sticks :</label>
-            <select id="sticks">
-                <option value="mode4">4</option>
-                <option value="mode9">9</option>
-                <option value="mode16" selected>16</option>
-            </select>
-            <button type="button" id="startButton" onclick="startGame()">Start Game</button>
-        </form>
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>NIM Game</title>
+    <link rel="stylesheet" href="/styles/loginStyle.css">
+    <script type="text/javascript" src="/scripts/loginScript.js"></script>
+</head>
+<body>
+    <div id="container">
+        <!-- Left Box for Game Rules -->
+        <div id="leftBox">
+            <img src="/images/nim2.png" alt="Game NIM2">
+            <p id="gameExplanations"><strong>NIM2:</strong> Divide packets of sticks</p>
+            <ol>
+                <p><strong>Game rules:</strong></p>
+
+                <li>You can <strong> select </strong> <i> one, two or three </i> of sticks by just <strong>click</strong> on each stick you want to pick.</li>
+                <li>You can't select sticks <i>more than 3 sticks</i>.</li>
+                <li>You can <strong>unselect</strong> sticks by just <strong>click</strong> on the one you want to unselect.</li>
+                <li>You can perform your move by <strong>click</strong> on the <i>Make move</i> button.</li>
+                <li>The <i>game is over</i> when there still <i>only one stick</i> from all rows, and the looser is the one who pick up the last stick.</li>
+            </ol>
+        </div>
+
+        <!-- Center Box for Login -->
+        <div id="loginContainer">
+            <h1>Welcome to NIM Game</h1>
+            <form id="loginForm">
+                <label for="username">Enter your name:</label>
+                <input type="text" id="username" required>
+                <label for="gameType">Select game type:</label>
+                <select id="gameType">
+                    <option value="NIM1" selected>Pick up sticks from rows</option>
+                    <option value="NIM2">Divide packets of sticks</option>
+                </select>
+                <br>
+                <label for="level">Select the level:</label>
+                <select id="level">
+                    <option value="Easy" selected>Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+                <br>
+                <label>Select number of sticks:</label>
+                <select id="sticks">
+                    <option value="mode4">4</option>
+                    <option value="mode9">9</option>
+                    <option value="mode16" selected>16</option>
+                </select>
+                <button type="button" id="startButton" onclick="startGame()">Start Game</button>
+            </form>
+        </div>
+
+        <!-- Right Box for Game Rules -->
+        <div id="rightBox">
+            <img src="/images/nim1.png" alt="Game NIM1">
+            <p id="gameExplanations"><strong>NIM1:</strong> Pick up sticks from rows</p>
+            <ol>
+                <p><strong>Game rules:</strong></p>
+
+                <li>You can <strong> select </strong> any number of sticks <i>from the same row</i> by just <strong>click</strong> on each stick you want to pick.</li>
+                <li>You can't select sticks <i>from two rows</i> at the same turn.</li>
+                <li>You can <strong>unselect</strong> sticks by just <strong>click</strong> on the one you want to unselect, and if you unselect all sticks selected from a spicific row then you can select sticks from another row.</li>
+                <li>You can perform your move by <strong>click</strong> on the <i>Make move</i> button.</li>
+                <li>The <i>game is over</i> when there still <i>only one stick</i> from all rows, and the <i>looser</i> is the one who pick up the last stick.</li>
+            </ol>
+        </div>
     </div>
-    
+</body>
+</html>
+
 </body>
 </html>
